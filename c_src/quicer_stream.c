@@ -589,6 +589,7 @@ handle_stream_recv_event(HQUIC Stream,
         { // Owner is waiting but need more date to poll
           // Mark we handled 0 bytes and let it contitune to recv.
           Event->RECEIVE.TotalBufferLength = 0;
+          MsQuic->StreamReceiveSetEnabled(s_ctx->Stream, true);
         }
     }
   else
