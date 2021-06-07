@@ -458,7 +458,7 @@ recv2(ErlNifEnv *env, __unused_parm__ int argc, const ERL_NIF_TERM argv[])
       if (0 == s_ctx->BufferLen - s_ctx->BufferOffset - size_consumed || 0 == size_req)
       {
          MsQuic->StreamReceiveComplete(s_ctx->Stream, s_ctx->BufferLen);
-//         MsQuic->StreamReceiveSetEnabled(s_ctx->Stream, true);
+         MsQuic->StreamReceiveSetEnabled(s_ctx->Stream, true);
           s_ctx->BufferOffset = 0;
           s_ctx->Buffer = NULL;
           s_ctx->BufferLen = 0;
@@ -469,9 +469,9 @@ recv2(ErlNifEnv *env, __unused_parm__ int argc, const ERL_NIF_TERM argv[])
       else
       {
           MsQuic->StreamReceiveComplete(s_ctx->Stream, size_consumed);
-          //s_ctx->BufferOffset += size_consumed;
+          s_ctx->BufferOffset += size_consumed;
       }
-      MsQuic->StreamReceiveSetEnabled(s_ctx->Stream, true);
+      //MsQuic->StreamReceiveSetEnabled(s_ctx->Stream, true);
       res = SUCCESS(enif_make_binary(env, &bin));
     }
   else
