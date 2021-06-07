@@ -70,6 +70,7 @@ typedef struct
   uint64_t BufferOffset;
   _CTX_CALLBACK_READ_ BOOLEAN is_wait_for_data;
   uint64_t passive_recv_bytes; // 0 means size unspecified
+  _CTX_CALLBACK_WRITE_ BOOLEAN is_buff_ready;
   void *reserved1;
   void *reserved2;
   void *reserved3;
