@@ -457,7 +457,9 @@ recv2(ErlNifEnv *env, __unused_parm__ int argc, const ERL_NIF_TERM argv[])
 
       if (0 == s_ctx->BufferLen - s_ctx->BufferOffset - size_consumed || 0 == size_req)
       {
-         MsQuic->StreamReceiveComplete(s_ctx->Stream, s_ctx->BufferLen);
+         //MsQuic->StreamReceiveComplete(s_ctx->Stream, s_ctx->BufferLen);
+         printf("!!!!reset %lu!!!! \n", size_consumed);
+         MsQuic->StreamReceiveComplete(s_ctx->Stream, size_consumed);
          MsQuic->StreamReceiveSetEnabled(s_ctx->Stream, true);
           s_ctx->BufferOffset = 0;
           s_ctx->Buffer = NULL;
@@ -468,6 +470,7 @@ recv2(ErlNifEnv *env, __unused_parm__ int argc, const ERL_NIF_TERM argv[])
         }
       else
       {
+        printf("!!!! not reset %lu!!!! \n", size_consumed);
           MsQuic->StreamReceiveComplete(s_ctx->Stream, size_consumed);
           s_ctx->BufferOffset += size_consumed;
       }
@@ -594,8 +597,9 @@ handle_stream_recv_event(HQUIC Stream,
       else
         { // Owner is waiting but need more date to poll
           // Mark we handled 0 bytes and let it contitune to recv.
-          Event->RECEIVE.TotalBufferLength = 0;
+          //Event->RECEIVE.TotalBufferLength = 0;
           s_ctx->is_buff_ready = FALSE;
+          status = QUIC_STATUS_PENDING;
           MsQuic->StreamReceiveSetEnabled(s_ctx->Stream, true);
         }
     }
