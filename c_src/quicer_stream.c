@@ -580,7 +580,7 @@ handle_stream_recv_event(HQUIC Stream,
       if (!s_ctx->is_wait_for_data)
       { //no one is waiting
           // msquic actually use only one buffer for API calls
-          assert(1 == Event->RECEIVE.BufferCount);
+          //assert(1 == Event->RECEIVE.BufferCount);
           s_ctx->is_buff_ready = TRUE;
           Event->RECEIVE.TotalBufferLength = 0;
           status = QUIC_STATUS_SUCCESS;
