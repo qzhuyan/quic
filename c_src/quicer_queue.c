@@ -23,10 +23,13 @@ static QUICER_ACCEPTOR_QUEUE *AcceptorQueueAlloc();
 void
 AcceptorQueueInit(QUICER_ACCEPTOR_QUEUE *q)
 {
-  q->Lock = enif_mutex_create("quicer:acceptQ");
-  enif_mutex_lock(q->Lock);
+  q->HLock = enif_mutex_create("quicer:acceptQ");
+  q->TLock = enif_mutex_create("quicer:acceptQ");
+  enif_mutex_lock(q->HLock);
+  enif_mutex_lock(q->TLock);
   CxPlatListInitializeHead(&q->List);
-  enif_mutex_unlock(q->Lock);
+  enif_mutex_unlock(q->TLock);
+  enif_mutex_unlock(q->HLock);
 }
 
 QUICER_ACCEPTOR_QUEUE *
@@ -45,12 +48,14 @@ AcceptorQueueNew()
 void
 AcceptorQueueDestroy(QUICER_ACCEPTOR_QUEUE *q)
 {
-  enif_mutex_lock(q->Lock);
+  enif_mutex_lock(q->HLock);
+  enif_mutex_lock(q->TLock);
   while (!CxPlatListIsEmpty(&q->List))
     {
       CxPlatListRemoveHead(&q->List);
     }
-  enif_mutex_unlock(q->Lock);
+  enif_mutex_unlock(q->TLock);
+  enif_mutex_unlock(q->HLock);
   CXPLAT_FREE(q, QUICER_ACCEPTOR);
 }
 
@@ -59,9 +64,9 @@ void
 AcceptorEnqueue(QUICER_ACCEPTOR_QUEUE *q, ACCEPTOR *a)
 {
   // @todo try lock less
-  enif_mutex_lock(q->Lock);
+  enif_mutex_lock(q->TLock);
   CxPlatListInsertTail(&q->List, &a->Link);
-  enif_mutex_unlock(q->Lock);
+  enif_mutex_unlock(q->TLock);
 }
 
 //@todo add assertions
@@ -69,7 +74,7 @@ ACCEPTOR *
 AcceptorDequeue(QUICER_ACCEPTOR_QUEUE *q)
 {
   ACCEPTOR *acceptor = NULL;
-  enif_mutex_lock(q->Lock);
+  enif_mutex_lock(q->HLock);
   if (!CxPlatListIsEmpty(&q->List))
     {
       acceptor = CXPLAT_CONTAINING_RECORD(
@@ -80,7 +85,7 @@ AcceptorDequeue(QUICER_ACCEPTOR_QUEUE *q)
       //@todo add tracepoint
       acceptor = NULL;
     }
-  enif_mutex_unlock(q->Lock);
+  enif_mutex_unlock(q->HLock);
   return acceptor;
 }
 

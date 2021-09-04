@@ -59,7 +59,8 @@ typedef struct ACCEPTOR
 typedef struct AcceptorsQueue
 {
   CXPLAT_LIST_ENTRY List; // list of acceptors
-  ErlNifMutex *Lock;
+  ErlNifMutex *HLock;
+  ErlNifMutex *TLock;
 } QUICER_ACCEPTOR_QUEUE;
 
 QUICER_ACCEPTOR_QUEUE *AcceptorQueueNew();
