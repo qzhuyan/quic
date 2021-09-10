@@ -1001,7 +1001,7 @@ tc_setopt_conn_local_addr(Config) ->
   end,
   {ok, OldAddr} = quicer:sockname(Stm0),
   %% change local addr with a new random port (0)
-  ?assertEqual(ok, quicer:setopt(Conn, param_conn_local_address, "127.0.0.1:0")),
+  ?assertEqual(ok, quicer:setopt(Conn, param_conn_local_address, "127.0.0.1:5660")),
   %% sleep is needed to finish migration at protocol level
   timer:sleep(50),
   {ok, NewAddr} = quicer:sockname(Stm0),
