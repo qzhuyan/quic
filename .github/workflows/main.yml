@@ -50,6 +50,7 @@ jobs:
           sudo sysctl -w kernel.core_pattern=core
           ulimit -c unlimited
           export CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          uname -a
           make ci
       - name: Archive CT Logs
         uses: actions/upload-artifact@v2
@@ -57,7 +58,7 @@ jobs:
         with:
           name: linux-ct-logs
           path: _build/test/
-          retention-days: 5
+          retention-days: 2
 
   multiarch:
     ### note:
