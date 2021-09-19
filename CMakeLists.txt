@@ -57,9 +57,6 @@ set(SOURCES
   c_src/quicer_tp.h
   )
 
-# @todo remove -DSO_ATTACH_REUSEPORT_CBPF=51
-add_compile_options(-DSO_ATTACH_REUSEPORT_CBPF=51)
-
 # for lttng, quicer_tp.h
 include_directories(c_src)
 
