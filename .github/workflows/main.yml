@@ -48,6 +48,7 @@ jobs:
       - name: release build with debug log off
         run: |
           sudo sysctl -w kernel.core_pattern=core
+          ip addr
           ulimit -c unlimited
           export CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           uname -a
