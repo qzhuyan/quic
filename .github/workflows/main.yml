@@ -48,6 +48,7 @@ jobs:
       - name: release build with debug log off
         run: |
           sudo sysctl -w kernel.core_pattern=core
+          sudo sysctl -a
           sysctl -a |grep ipv6
           sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
           ip addr
