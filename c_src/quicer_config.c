@@ -18,6 +18,7 @@ limitations under the License.
 #include "quicer_internal.h"
 #include "quicer_queue.h"
 #include <msquichelper.h>
+#include <netinet/ip.h>
 
 extern BOOLEAN isRegistered;
 
@@ -1041,7 +1042,9 @@ parse_listen_on(ErlNifEnv *env, ERL_NIF_TERM elisten_on, QUIC_ADDR *Address)
     {
       if ((QuicAddr4FromString(listen_on, Address)
            || QuicAddr6FromString(listen_on, Address)))
-        {
+      {
+        printf("set %s to port: %d family: %d, AF_INET %d\n",
+               listen_on, ntohs(Address->Ipv4.sin_port), Address->Ipv4.sin_family,  AF_INET);
           return TRUE;
         }
     }
