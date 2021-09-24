@@ -62,7 +62,14 @@ jobs:
           sudo apt-get install -y lttng-tools lttng-modules-dkms babeltrace liblttng-ust-dev
           which lttng
           uname -a
-          make ci
+          mkdir msquic_lttng
+          lttng create msquic -o=./msquic_lttng
+          lttng enable-event --userspace CLOG_*
+          lttng add-context --userspace --type=vpid --type=vtid
+          lttng start
+          make ci || echo "test fail"
+          lttng stop msquic
+          babeltrace --names all ./msquic_lttng/* > _build/test/quic.babel.txt
       - name: Archive CT Logs
         uses: actions/upload-artifact@v2
         if: failure()
