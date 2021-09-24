@@ -49,11 +49,15 @@ jobs:
         run: |
           sudo sysctl -w kernel.core_pattern=core
           sudo sysctl -a
-          sysctl -a |grep ipv6
           sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
           ip addr
           ulimit -c unlimited
           export CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          export QUIC_ENABLE_LOGGING=ON
+          sudo apt-add-repository ppa:lttng/stable-2.12
+          sudo apt-get update
+          sudo apt-get install -y liblttng-ust-dev
+          which lttng
           uname -a
           make ci
       - name: Archive CT Logs
