@@ -35,13 +35,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        otp: [22.3.4.9, 23.2, 24.0.2]
-        build_type: [RelWithDebInfo, Debug]
+        #otp: [22.3.4.9, 23.2, 24.0.2]
+        #build_type: [RelWithDebInfo, Debug]
+        otp: [22.3.4.9]
+        build_type: [RelWithDebInfo]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
       - uses: gleam-lang/setup-erlang@v1.1.2
         with:
           otp-version: ${{ matrix.otp }}
