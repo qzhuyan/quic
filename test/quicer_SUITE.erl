@@ -990,7 +990,7 @@ tc_setopt_conn_local_addr(Config) ->
   Port = 4578,
   Owner = self(),
   {SPid, Ref} = spawn_monitor(fun() -> echo_server(Owner, Config, Port) end),
-  {ok, Conn} = quicer:connect("localhost", Port, default_conn_opts(), 5000),
+  {ok, Conn} = quicer:connect("127.0.0.1", Port, default_conn_opts(), 5000),
   {ok, Stm0} = quicer:start_stream(Conn, [{active, true}]),
   {ok, 5} = quicer:send(Stm0, <<"ping1">>),
   receive
