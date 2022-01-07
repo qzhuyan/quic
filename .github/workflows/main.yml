@@ -48,7 +48,8 @@ jobs:
           otp-version: ${{ matrix.otp }}
       - name: release build with debug log off
         run: |
-          echo "github ref: {{ github.ref }}"
+          echo "github ref: {{ github.event.ref }}"
+          exit 0
           sudo sysctl -w kernel.core_pattern=core
           ulimit -c unlimited
           export CMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -94,7 +95,7 @@ jobs:
 
   linux-release:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.event.ref, 'refs/tags/v')
     needs: linux
     steps:
       - name: Download artifact
