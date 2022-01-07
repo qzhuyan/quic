@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 jobs:
   mac:
+    if: False
     runs-on: macos-10.15
     steps:
       - name: Checkout
@@ -47,6 +48,7 @@ jobs:
           otp-version: ${{ matrix.otp }}
       - name: release build with debug log off
         run: |
+          echo "github ref: {{ github.ref }}"
           sudo sysctl -w kernel.core_pattern=core
           ulimit -c unlimited
           export CMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -122,6 +124,7 @@ jobs:
 
 
   multiarch:
+    if: False
     ### note:
     ### -  only verify compilation because qemu user env has no support for some socket opt
     runs-on: ubuntu-latest
