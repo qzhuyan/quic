@@ -97,6 +97,9 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.event.ref, 'refs/tags/v')
     needs: linux
+    strategy:
+      matrix:
+        otp: [22.3.4.9, 23.2, 24.0.2]
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -123,8 +126,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: quicer-.*RelWithDebInfo.zip
-          asset_name: quicer release packages
+          asset_path: quicer-${{ matrix.otp }}-RelWithDebInfo
+          asset_name: quicer RelWithDebInfo packages ${{ matrix.otp }}
           asset_content_type: application/zip
 
 
