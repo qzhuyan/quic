@@ -88,7 +88,6 @@ jobs:
 
       - name: upload rel tar file
         uses: actions/upload-artifact@v2
-        if: failure()
         with:
           name: quicer-{{ matrix.otp }}-{{ matrix.build_type }}
           path: _build/default/rel/quicer/quicer-*.tar.gz
