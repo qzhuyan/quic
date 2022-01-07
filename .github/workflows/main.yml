@@ -96,15 +96,9 @@ jobs:
 
   linux-release:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.ref, 'refs/tags/v')
+    if: startsWith(github.event.ref, 'refs/tags/')
     needs: linux
-    strategy:
-      matrix:
-        otp: [22.3.4.9, 23.2, 24.0.2]
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -115,6 +109,17 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: true
+
+  linux-release-upload-artifact:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.ref, 'refs/tags/')
+    needs: linux-release
+    strategy:
+      matrix:
+        otp: [22.3.4.9, 23.2, 24.0.2]
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
 
       - name: check downloadeds
         run: |
@@ -128,7 +133,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: quicer-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
-          asset_name: quicer RelWithDebInfo packages ${{ matrix.otp }}
+          asset_name: quicer-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
           asset_content_type: application/zip
 
   multiarch:
