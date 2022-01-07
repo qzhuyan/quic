@@ -104,11 +104,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            quicer-22.3.4.9-RelWithDebInfo/quicer.tar.gz
-            quicer-23.2-RelWithDebInfo/quicer.tar.gz
-            quicer-24.0.2-RelWithDebInfo/quicer.tar.gz
-
+          files:
+            quicer-.*-RelWithDebInfo/*.tar.gz
       # - name: Create Release
       #   id: create_release
       #   uses: actions/create-release@v1
