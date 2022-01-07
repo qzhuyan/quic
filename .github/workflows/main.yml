@@ -111,6 +111,11 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: true
+
+      - name: check downloadeds
+        run: |
+          tree
+
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
@@ -118,7 +123,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: quicer*RelWithDebInfo.zip
+          asset_path: quicer-.*RelWithDebInfo.zip
           asset_name: quicer release packages
           asset_content_type: application/zip
 
