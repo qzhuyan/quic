@@ -85,12 +85,13 @@ jobs:
         # if: startsWith(github.ref, 'refs/tags/v')
         run: |
           make tar
+          mv _build/default/rel/quicer/quicer-*.tar.gz quicer.tar.gz
 
       - name: upload rel tar file
         uses: actions/upload-artifact@v2
         with:
           name: quicer-${{ matrix.otp }}-${{ matrix.build_type }}
-          path: _build/default/rel/quicer/quicer-*.tar.gz
+          path: quicer.tar.gz
           retention-days: 5
 
   linux-release:
@@ -126,11 +127,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: quicer-${{ matrix.otp }}-RelWithDebInfo/*.tar.gz
+          asset_path: quicer-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
           asset_name: quicer RelWithDebInfo packages ${{ matrix.otp }}
           asset_content_type: application/zip
-
-
 
   multiarch:
     if: False
