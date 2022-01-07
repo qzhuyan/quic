@@ -89,7 +89,7 @@ jobs:
       - name: upload rel tar file
         uses: actions/upload-artifact@v2
         with:
-          name: quicer-{{ matrix.otp }}-{{ matrix.build_type }}
+          name: quicer-${{ matrix.otp }}-${{ matrix.build_type }}
           path: _build/default/rel/quicer/quicer-*.tar.gz
           retention-days: 5
 
