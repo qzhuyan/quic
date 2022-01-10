@@ -3,7 +3,16 @@ on: [push, pull_request]
 
 jobs:
   mac:
-    runs-on: macos-10.15
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-10.15
+          - macos-11
+        otp:
+          - 23
+          - 24
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -15,19 +24,18 @@ jobs:
           path: |
             ~/Library/Caches/Homebrew/
             ~/Library/Caches/Homebrew/downloads/
-          key: brew-${{ hashFiles('.github/brew-formulae') }}
-          restore-keys: brew-
+          key: brew-${{ matrix.os }}-${{ matrix.otp  }}
       - name: prepare
         run: |
           brew update
-          brew install erlang@23
+          brew install erlang@${{ matrix.otp }}
       - name: install rebar3
         run: |
           wget https://s3.amazonaws.com/rebar3/rebar3 && chmod +x rebar3
           cp ./rebar3 /usr/local/bin/rebar3
       - name: release build
         run: |
-          export PATH="/usr/local/opt/erlang@23/bin:$PATH"
+          export PATH="/usr/local/opt/erlang@${{ matrix.otp }}/bin:$PATH"
           ulimit -c unlimited
           make ci
 
@@ -42,14 +50,14 @@ jobs:
       - name: build rel tar file
         # if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          export PATH="/usr/local/opt/erlang@23/bin:$PATH"
+          export PATH="/usr/local/opt/erlang@${{ matrix.otp }}/bin:$PATH"
           make tar
           mv _build/default/rel/quicer/quicer-*.tar.gz quicer.tar.gz
 
       - name: upload rel tar file
         uses: actions/upload-artifact@v2
         with:
-          name: quicer-macos-${{ matrix.otp }}-${{ matrix.build_type }}
+          name: quicer-${{ matrix.os }}-otp${{ matrix.otp }}
           path: quicer.tar.gz
           retention-days: 5
 
@@ -140,7 +148,8 @@ jobs:
     strategy:
       matrix:
         otp: [22.3.4.9, 23.2, 24.0.2]
-        os: [linux, macos]
+        os:
+          - linux
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -158,6 +167,33 @@ jobs:
           upload_url: ${{ needs.make-release.outputs.upload_url }}
           asset_path: quicer-${{ matrix.os }}-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
           asset_name: quicer-${{ matrix.os }}-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
+          asset_content_type: application/zip
+
+  mac-release-upload-artifact:
+    needs: make-release
+    strategy:
+      matrix:
+        os:
+          - macos-10.15
+          - macos-11
+        otp:
+          - 23
+          - 24
+    runs-on: ${{ matrix.os }}
+    if: startsWith(github.event.ref, 'refs/tags/')
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.make-release.outputs.upload_url }}
+          asset_path: quicer-${{ matrix.os }}-otp${{ matrix.otp }}/quicer.tar.gz
+          asset_name: quicer-${{ matrix.os }}-otp${{ matrix.otp }}/quicer.tar.gz
           asset_content_type: application/zip
 
   multiarch:
