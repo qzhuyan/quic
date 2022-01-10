@@ -112,6 +112,7 @@ jobs:
           prerelease: true
 
   linux-release-upload-artifact:
+    needs: linux-release
     runs-on: ubuntu-latest
     if: startsWith(github.event.ref, 'refs/tags/')
     needs: linux-release
@@ -132,7 +133,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ jobs.linux-release.steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: quicer-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
           asset_name: quicer-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
           asset_content_type: application/zip
