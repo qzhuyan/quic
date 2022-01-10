@@ -3,7 +3,6 @@ on: [push, pull_request]
 
 jobs:
   mac:
-    if: False
     runs-on: macos-10.15
     steps:
       - name: Checkout
@@ -30,6 +29,19 @@ jobs:
         with:
           name: mac-ct-logs
           path: _build/test/logs
+          retention-days: 5
+
+      - name: build rel tar file
+        # if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          make tar
+          mv _build/default/rel/quicer/quicer-*.tar.gz quicer.tar.gz
+
+      - name: upload rel tar file
+        uses: actions/upload-artifact@v2
+        with:
+          name: quicer-macos-${{ matrix.otp }}-${{ matrix.build_type }}
+          path: quicer.tar.gz
           retention-days: 5
 
   linux:
@@ -90,14 +102,14 @@ jobs:
       - name: upload rel tar file
         uses: actions/upload-artifact@v2
         with:
-          name: quicer-${{ matrix.otp }}-${{ matrix.build_type }}
+          name: quicer-linux-${{ matrix.otp }}-${{ matrix.build_type }}
           path: quicer.tar.gz
           retention-days: 5
 
-  linux-release:
+  make-release:
     runs-on: ubuntu-latest
     if: startsWith(github.event.ref, 'refs/tags/')
-    needs: linux
+    needs: [linux, mac]
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
@@ -113,12 +125,13 @@ jobs:
           prerelease: true
 
   linux-release-upload-artifact:
-    needs: linux-release
+    needs: make-release
     runs-on: ubuntu-latest
     if: startsWith(github.event.ref, 'refs/tags/')
     strategy:
       matrix:
         otp: [22.3.4.9, 23.2, 24.0.2]
+        os: [linux, macos]
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v2
@@ -134,8 +147,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.linux-release.outputs.upload_url }}
-          asset_path: quicer-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
-          asset_name: quicer-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
+          asset_path: quicer-${{ matrix.os }}-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
+          asset_name: quicer-${{ matrix.os }}-${{ matrix.otp }}-RelWithDebInfo/quicer.tar.gz
           asset_content_type: application/zip
 
   multiarch:
