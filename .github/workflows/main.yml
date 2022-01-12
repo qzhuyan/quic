@@ -269,7 +269,7 @@ jobs:
         arch:
           - arm64v8
           - arm32v7
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     if: startsWith(github.event.ref, 'refs/tags/')
     steps:
       - name: Download artifact
