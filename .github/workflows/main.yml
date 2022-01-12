@@ -219,8 +219,8 @@ jobs:
 
     - name: move arm32v7
       run: |
-        sudo chmod 777 _build/default/rel/quicer/quicer-*.tar.gz
-        mv _build/default/rel/quicer/quicer-*.tar.gz quicer.tar.gz
+        sudo mv _build/default/rel/quicer/quicer-*.tar.gz quicer.tar.gz
+        sudo chmod o+r quicer.tar.gz
 
     - name: upload rel tar file
       uses: actions/upload-artifact@v2
@@ -237,8 +237,8 @@ jobs:
 
     - name: move arm64v8
       run: |
-        sudo chmod 777 _build/default/rel/quicer/quicer-*.tar.gz
-        mv _build/default/rel/quicer/quicer-*.tar.gz quicer.tar.gz
+        sudo mv _build/default/rel/quicer/quicer-*.tar.gz quicer.tar.gz
+        sudo chmod o+r quicer.tar.gz
 
     - name: upload rel tar file
       uses: actions/upload-artifact@v2
