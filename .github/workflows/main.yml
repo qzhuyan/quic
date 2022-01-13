@@ -72,6 +72,9 @@ jobs:
         build_type:
           - RelWithDebInfo
           - Debug
+        logging:
+          - true
+          - false
         arch:
           - x86_64
     steps:
@@ -90,7 +93,11 @@ jobs:
           sudo sysctl -w kernel.core_pattern=core
           ulimit -c unlimited
           export CMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          export QUIC_ENABLE_LOGGING=ON
+
+          if ${{ matrix.logging }}"" == "true" ; then
+            export QUIC_ENABLE_LOGGING=ON
+          fi
+
           sudo apt-add-repository ppa:lttng/stable-2.13
           sudo apt-get update
           sudo apt-get install -y lttng-tools lttng-modules-dkms babeltrace liblttng-ust-dev
@@ -126,7 +133,7 @@ jobs:
       - name: upload rel tar file
         uses: actions/upload-artifact@v2
         with:
-          name: quicer-linux-${{ matrix.otp }}-${{ matrix.arch }}-${{ matrix.build_type }}
+          name: quicer-linux-${{ matrix.otp }}-${{ matrix.arch }}-${{ matrix.build_type }}-logging-${{ matrix.logging }}
           path: quicer.tar.gz
           retention-days: 5
 
@@ -174,8 +181,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.make-release.outputs.upload_url }}
-          asset_path: quicer-${{ matrix.os }}-${{ matrix.otp }}-${{ matrix.arch }}-RelWithDebInfo/quicer.tar.gz
-          asset_name: quicer-${{ matrix.os }}-${{ matrix.otp }}-${{ matrix.arch }}-RelWithDebInfo/quicer.tar.gz
+          asset_path: quicer-${{ matrix.os }}-${{ matrix.otp }}-${{ matrix.arch }}-RelWithDebInfo-logging-off/quicer.tar.gz
+          asset_name: quicer-${{ matrix.os }}-${{ matrix.otp }}-${{ matrix.arch }}/quicer.tar.gz
           asset_content_type: application/zip
 
   mac-release-upload-artifact:
@@ -221,7 +228,7 @@ jobs:
     - name: make ci arm32v7
       uses: docker://emqx/build-env:erl24.0.1-emqx-1-alpine-arm32v7
       with:
-        args: >
+        args: |
           make tar
 
     - name: move arm32v7
@@ -239,7 +246,7 @@ jobs:
     - name: make ci arm64v8
       uses: docker://emqx/build-env:erl24.0.1-emqx-1-alpine-arm64v8
       with:
-        args: >
+        args: |
           make clean tar
 
     - name: move arm64v8
