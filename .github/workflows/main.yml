@@ -80,7 +80,6 @@ jobs:
           retention-days: 5
 
   multiarch:
-    if: false
     ### note:
     ### -  only verify compilation because qemu user env has no support for some socket opt
     runs-on: ubuntu-latest
