@@ -116,6 +116,7 @@ jobs:
   arm32v7:
     runs-on: rpi3
     steps:
+    - uses: AutoModality/action-clean@v1
     - name: Checkout
       uses: actions/checkout@v2
       with:
@@ -126,11 +127,3 @@ jobs:
       with:
         args: >
           make
-
-    - name: cleanup workspace
-      # @todo find a proper way, this is just a workaround
-      shell: bash
-      run: |
-        cd $RUNNER_WORKSPACE
-        cd ..
-        sudo rm -r *
