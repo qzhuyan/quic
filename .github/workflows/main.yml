@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 jobs:
   mac:
+    if: false
     runs-on: macos-10.15
     steps:
       - name: Checkout
@@ -32,6 +33,7 @@ jobs:
           retention-days: 5
 
   linux:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,6 +80,7 @@ jobs:
           retention-days: 5
 
   multiarch:
+    if: false
     ### note:
     ### -  only verify compilation because qemu user env has no support for some socket opt
     runs-on: ubuntu-latest
