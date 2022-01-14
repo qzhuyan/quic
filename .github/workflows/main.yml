@@ -109,3 +109,25 @@ jobs:
         name: linux-ct-logs
         path: _build/test/
         retention-days: 5
+
+  arm32v7:
+    runs-on: rpi3
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: make ci arm32v7
+      uses: docker://emqx/build-env:erl24.0.1-emqx-1-alpine-arm32v7
+      with:
+        args: >
+          make
+
+    - name: cleanup workspace
+      # @todo find a proper way, this is just a workaround
+      shell: bash
+      run: |
+        cd $RUNNER_WORKSPACE
+        cd ..
+        sudo rm -r *
