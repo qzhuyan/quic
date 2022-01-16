@@ -96,13 +96,13 @@ jobs:
       uses: docker://emqx/build-env:erl24.0.1-emqx-1-alpine-arm32v7
       with:
         args: >
-          make
+          make ci
 
     - name: make ci arm64v8
       uses: docker://emqx/build-env:erl24.0.1-emqx-1-alpine-arm64v8
       with:
         args: >
-          make
+          make ci
 
     - name: Archive CT Logs
       uses: actions/upload-artifact@v2
@@ -122,6 +122,5 @@ jobs:
         submodules: recursive
 
     - name: make ci arm32v7
-      with:
-        args: >
-          make ci
+      run:
+        make ci
