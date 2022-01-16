@@ -318,7 +318,7 @@ ERL_NIF_TERM ATOM_FAST_CONN;
   ATOM(ATOM_STREAM_OPEN_ERROR, stm_open_error);                               \
   ATOM(ATOM_STREAM_START_ERROR, stm_start_error);                             \
   ATOM(ATOM_STREAM_SEND_ERROR, stm_send_error);                               \
-  ATOM(ATOM_DGRAM_SEND_ERROR, dgram_send_error);                               \
+  ATOM(ATOM_DGRAM_SEND_ERROR, dgram_send_error);                              \
   ATOM(ATOM_OWNER_DEAD, owner_dead);                                          \
   ATOM(ATOM_NOT_OWNER, not_owner);                                            \
                                                                               \
@@ -520,7 +520,7 @@ ERL_NIF_TERM ATOM_FAST_CONN;
   ATOM(ATOM_QUIC, quic);                                                      \
   ATOM(ATOM_QUIC_PASSIVE, quic_passive);                                      \
   ATOM(ATOM_DGRAM, dgram);                                                    \
-  ATOM(ATOM_DGRAM_MAX_LEN, dgram_max_len);                                                    \
+  ATOM(ATOM_DGRAM_MAX_LEN, dgram_max_len);                                    \
   ATOM(ATOM_DEBUG, debug);                                                    \
   ATOM(ATOM_ONCE, once);                                                      \
   ATOM(ATOM_NEW_CONN, new_conn);                                              \

@@ -23,7 +23,8 @@ EncodeHexBuffer(uint8_t *Buffer, uint8_t BufferLen, char *HexString);
 
 extern inline const char *QuicStatusToString(QUIC_STATUS Status);
 
-static void handle_dgram_state_event(QuicerConnCTX *c_ctx, QUIC_CONNECTION_EVENT *Event);
+static void handle_dgram_state_event(QuicerConnCTX *c_ctx,
+                                     QUIC_CONNECTION_EVENT *Event);
 
 static void handle_dgram_send_state_event(QuicerConnCTX *c_ctx,
                                           QUIC_CONNECTION_EVENT *Event);
