@@ -125,4 +125,4 @@ jobs:
       uses: docker://emqx/build-env:erl24.0.1-emqx-1-alpine-arm32v7
       with:
         args: >
-          make
+          make ci
