@@ -684,11 +684,27 @@ tc_conn_gc(Config) ->
                                          {ok, 4} = quicer:async_send(Stm, <<"ping">>),
                                          {ok, <<"ping">>} = quicer:recv(Stm, 4)
                                      end),
+
+                 {ok, #{resource_id := SRid}}
+                   = ?block_until(#{ ?snk_kind := debug
+                                   , context := "callback"
+                                   , function := "ServerConnectionCallback"
+                                   , mark := ?QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE
+                                   , tag := "event" },
+                                  10000),
+                 {ok, #{resource_id := CRid}}
+                   = ?block_until(#{ ?snk_kind := debug
+                                   , context := "callback"
+                                   , function := "ClientConnectionCallback"
+                                   , mark := ?QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE
+                                   , tag := "event" },
+                                  10000),
                  ?block_until(#{ ?snk_kind := debug
                                , context := "callback"
                                , function := "resource_conn_dealloc_callback"
+                               , resource_id := CRid
                                , tag := "end"},
-                              10000),
+                              10000, 1000),
                  ok
                end,
                fun(Result, Trace) ->
@@ -722,8 +738,7 @@ tc_conn_gc(Config) ->
                                               , resource_id := _RidS
                                               , mark := ?QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE
                                               , tag := "event"},
-                                             Trace)),
-                   ?assertEqual(2, length([ E || #{function := "resource_conn_dealloc_callback" } = E <- Trace]))
+                                             Trace))
                end),
   ct:pal("stop listener"),
   ok = quicer:stop_listener(mqtt),
