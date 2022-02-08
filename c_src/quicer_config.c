@@ -455,7 +455,14 @@ encode_parm_to_eterm(ErlNifEnv *env,
       QUIC_STATISTICS *statics = (QUIC_STATISTICS *)Buffer;
       res = SUCCESS(enif_make_list(
           env,
-          20,
+          31,
+          PropTupleStrInt(CorrelationId, statics->CorrelationId),
+          PropTupleStrInt(VersionNegotiation, statics->VersionNegotiation),
+          PropTupleStrInt(StatelessRetry, statics->StatelessRetry),
+          PropTupleStrInt(ResumptionAttempted, statics->ResumptionAttempted),
+          PropTupleStrInt(Rtt, statics->Rtt),
+          PropTupleStrInt(MinRtt, statics->MinRtt),
+          PropTupleStrInt(MaxRtt, statics->MaxRtt),
           PropTupleStrInt(Timing.Start, statics->Timing.Start),
           PropTupleStrInt(
               Timing.InitialFlightEnd,
@@ -465,6 +472,19 @@ encode_parm_to_eterm(ErlNifEnv *env,
               Timing.HandshakeFlightEnd,
               statics->Timing.HandshakeFlightEnd), // Processed all peer's
                                                    // Handshake packets
+                                                   //
+          PropTupleStrInt(
+            Handshake.ClientFlight1Bytes,
+            statics->Handshake.ClientFlight1Bytes),
+
+          PropTupleStrInt(
+            Handshake.ServerFlight1Bytes,
+              statics->Handshake.ServerFlight1Bytes),
+
+          PropTupleStrInt(
+            Handshake.ClientFlight2Bytes,
+              statics->Handshake.ClientFlight2Bytes),
+
           PropTupleStrInt(Send.PathMtu,
                           statics->Send.PathMtu), // Current path MTU.
           PropTupleStrInt(
@@ -520,7 +540,10 @@ encode_parm_to_eterm(ErlNifEnv *env,
                   .DecryptionFailures), // Count of packet decryption failures.
           PropTupleStrInt(
               Recv.ValidAckFrames,
-              statics->Recv.ValidAckFrames) // Count of receive ACK frames.
+              statics->Recv.ValidAckFrames), // Count of receive ACK frames.
+          PropTupleStrInt(
+              Misc.KeyUpdateCount,
+              statics->Misc.KeyUpdateCount)
           ));
     }
   else if (QUIC_PARAM_CONN_SETTINGS == Param
@@ -1572,19 +1595,12 @@ set_connection_opt(ErlNifEnv *env,
         }
       Buffer = &Settings;
     }
-  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS))
+  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS)
+           || IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS_PLAT))
     {
       Level = QUIC_PARAM_LEVEL_CONNECTION;
       Param = QUIC_PARAM_CONN_STATISTICS;
       BufferLength = sizeof(QUIC_STATISTICS);
-    }
-  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS_PLAT))
-    {
-      Level = QUIC_PARAM_LEVEL_CONNECTION;
-      Param = QUIC_PARAM_CONN_STATISTICS_PLAT;
-      // @TODO
-      res = ERROR_TUPLE_2(ATOM_STATUS(QUIC_STATUS_NOT_SUPPORTED));
-      goto Exit;
     }
   else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_SHARE_UDP_BINDING))
     {
