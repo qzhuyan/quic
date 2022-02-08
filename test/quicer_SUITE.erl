@@ -74,6 +74,7 @@
         % , tc_getopt_raw/1
         , tc_getopt/1
         , tc_getopt_stream_active/1
+        , tc_getopt_conn_correlation_id/1
         , tc_setopt/1
 
         %% @TODO following two tcs are failing due to:
@@ -869,6 +870,20 @@ tc_getopt_stream_active(Config) ->
       ct:fail("listener_timeout")
   end.
 
+tc_getopt_conn_correlation_id(Config) ->
+  Port = 4570,
+  Owner = self(),
+  {SPid, _Ref} = spawn_monitor(fun() -> echo_server(Owner, Config, Port) end),
+  receive
+    listener_ready ->
+      {ok, Conn} = quicer:connect("localhost", Port, default_conn_opts(), 5000),
+      {ok, CorrId} = quicer:get_correlation_id(Conn),
+      ?assert(is_integer(CorrId)),
+      quicer:close_connection(Conn),
+      SPid ! done
+  after 5000 ->
+      ct:fail("listener_timeout")
+  end.
 
 tc_get_stream_id(Config) ->
   Port = 4571,

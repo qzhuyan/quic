@@ -63,6 +63,7 @@
         , getopt/3
         , setopt/3
         , get_stream_id/1
+        , get_correlation_id/1
         , getstat/2
         , peername/1
         , listeners/0
@@ -464,6 +465,15 @@ get_conn_rid(Conn) ->
         {ok, non_neg_integer()} | {error, any()}.
 get_stream_rid(Stream) ->
   quicer_nif:get_stream_rid(Stream).
+
+-spec get_correlation_id(connection_handler()) -> {ok, integer()} | {error, any()}.
+get_correlation_id(Conn) ->
+  case quicer_nif:getopt(Conn, param_conn_statistics_plat, _IsRaw = false) of
+    {ok, PropList} ->
+      {ok, proplists:get_value("CorrelationId", PropList)};
+    {error, _ } = E ->
+      E
+  end.
 
 -spec listeners() -> [{{ quicer_listener:listener_name()
                        , quicer_listener:listen_on()},

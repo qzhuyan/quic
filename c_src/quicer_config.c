@@ -473,17 +473,14 @@ encode_parm_to_eterm(ErlNifEnv *env,
               statics->Timing.HandshakeFlightEnd), // Processed all peer's
                                                    // Handshake packets
                                                    //
-          PropTupleStrInt(
-            Handshake.ClientFlight1Bytes,
-            statics->Handshake.ClientFlight1Bytes),
+          PropTupleStrInt(Handshake.ClientFlight1Bytes,
+                          statics->Handshake.ClientFlight1Bytes),
 
-          PropTupleStrInt(
-            Handshake.ServerFlight1Bytes,
-              statics->Handshake.ServerFlight1Bytes),
+          PropTupleStrInt(Handshake.ServerFlight1Bytes,
+                          statics->Handshake.ServerFlight1Bytes),
 
-          PropTupleStrInt(
-            Handshake.ClientFlight2Bytes,
-              statics->Handshake.ClientFlight2Bytes),
+          PropTupleStrInt(Handshake.ClientFlight2Bytes,
+                          statics->Handshake.ClientFlight2Bytes),
 
           PropTupleStrInt(Send.PathMtu,
                           statics->Send.PathMtu), // Current path MTU.
@@ -541,10 +538,7 @@ encode_parm_to_eterm(ErlNifEnv *env,
           PropTupleStrInt(
               Recv.ValidAckFrames,
               statics->Recv.ValidAckFrames), // Count of receive ACK frames.
-          PropTupleStrInt(
-              Misc.KeyUpdateCount,
-              statics->Misc.KeyUpdateCount)
-          ));
+          PropTupleStrInt(Misc.KeyUpdateCount, statics->Misc.KeyUpdateCount)));
     }
   else if (QUIC_PARAM_CONN_SETTINGS == Param
            && QUIC_PARAM_LEVEL_CONNECTION == Level)
@@ -1364,19 +1358,12 @@ get_connection_opt(ErlNifEnv *env,
       Param = QUIC_PARAM_CONN_SETTINGS;
       BufferLength = sizeof(QUIC_SETTINGS);
     }
-  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS))
+  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS)
+           || IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS_PLAT))
     {
       Level = QUIC_PARAM_LEVEL_CONNECTION;
       Param = QUIC_PARAM_CONN_STATISTICS;
       BufferLength = sizeof(QUIC_STATISTICS);
-    }
-  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS_PLAT))
-    {
-      Level = QUIC_PARAM_LEVEL_CONNECTION;
-      Param = QUIC_PARAM_CONN_STATISTICS_PLAT;
-      // @TODO
-      res = ERROR_TUPLE_2(ATOM_STATUS(QUIC_STATUS_NOT_SUPPORTED));
-      goto Exit;
     }
   else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_SHARE_UDP_BINDING))
     {
@@ -1595,12 +1582,19 @@ set_connection_opt(ErlNifEnv *env,
         }
       Buffer = &Settings;
     }
-  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS)
-           || IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS_PLAT))
+  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS))
     {
       Level = QUIC_PARAM_LEVEL_CONNECTION;
       Param = QUIC_PARAM_CONN_STATISTICS;
       BufferLength = sizeof(QUIC_STATISTICS);
+    }
+  else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_STATISTICS_PLAT))
+    {
+      Level = QUIC_PARAM_LEVEL_CONNECTION;
+      Param = QUIC_PARAM_CONN_STATISTICS_PLAT;
+      // @TODO
+      res = ERROR_TUPLE_2(ATOM_STATUS(QUIC_STATUS_NOT_SUPPORTED));
+      goto Exit;
     }
   else if (IS_SAME_TERM(optname, ATOM_QUIC_PARAM_CONN_SHARE_UDP_BINDING))
     {
