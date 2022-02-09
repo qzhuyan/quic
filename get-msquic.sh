@@ -10,6 +10,12 @@ fi
 
 cd msquic
 
+# CLOG patch
+if [ ! -f 2051.diff ]; then
+    wget https://patch-diff.githubusercontent.com/raw/microsoft/msquic/pull/2051.diff
+    patch -p1 < 2051.diff
+fi
+
 CURRENT_VSN="$(git describe --tags --exact-match 2>/dev/null || echo 'unknown')"
 
 if [ "$CURRENT_VSN" = 'unknown' ]; then
