@@ -1092,14 +1092,7 @@ get_stream_opt(ErlNifEnv *env,
   QUIC_PARAM_LEVEL Level;
   ERL_NIF_TERM res = ATOM_ERROR_NOT_FOUND;
 
-  enif_mutex_lock(s_ctx->lock);
-  if (s_ctx->is_closed)
-    {
-      enif_mutex_unlock(s_ctx->lock);
-      return ERROR_TUPLE_2(ATOM_CLOSED);
-    }
   enif_keep_resource(s_ctx);
-  enif_mutex_unlock(s_ctx->lock);
 
   if (!IS_SAME_TERM(ATOM_FALSE, elevel))
     {
@@ -1203,14 +1196,7 @@ set_stream_opt(ErlNifEnv *env,
     }
 
   // Msquic Opts ...
-  enif_mutex_lock(s_ctx->lock);
-  if (s_ctx->is_closed)
-    {
-      enif_mutex_unlock(s_ctx->lock);
-      return ERROR_TUPLE_2(ATOM_CLOSED);
-    }
   enif_keep_resource(s_ctx);
-  enif_mutex_unlock(s_ctx->lock);
 
   if (!IS_SAME_TERM(ATOM_FALSE, elevel))
     {

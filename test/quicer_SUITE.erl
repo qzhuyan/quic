@@ -680,7 +680,7 @@ tc_stream_send_after_conn_close(Config) ->
       {ok, Stm} = quicer:start_stream(Conn, []),
       {ok, {_, _}} = quicer:sockname(Stm),
       ok = quicer:close_connection(Conn),
-      {error, closed} = quicer:send(Stm, <<"ping">>),
+      {error,stm_send_error,invalid_state} = quicer:send(Stm, <<"ping">>),
       SPid ! done,
       ok = ensure_server_exit_normal(Ref)
   after 1000 ->

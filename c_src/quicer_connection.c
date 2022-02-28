@@ -150,6 +150,7 @@ _IRQL_requires_max_(DISPATCH_LEVEL)
       //
       // A monitor is automatically removed when it triggers or when the
       // resource is deallocated.
+
       enif_monitor_process(NULL, c_ctx, &c_ctx->owner->Pid, &c_ctx->owner_mon);
       if (!enif_send(NULL,
                      &(c_ctx->owner->Pid),
@@ -300,7 +301,8 @@ _IRQL_requires_max_(DISPATCH_LEVEL)
   enif_mutex_unlock(c_ctx->lock);
 
   if (is_destroy)
-    {
+  {
+    enif_release_resource(c_ctx);
       destroy_c_ctx(c_ctx);
     }
   return QUIC_STATUS_SUCCESS;
@@ -507,7 +509,7 @@ ServerConnectionCallback(HQUIC Connection,
   enif_mutex_unlock(c_ctx->lock);
 
   if (is_destroy)
-    {
+  {
       destroy_c_ctx(c_ctx);
     }
 
@@ -611,6 +613,8 @@ async_connect3(ErlNifEnv *env,
         }
     }
 
+  // On behavior of Callback
+  enif_keep_resource(c_ctx);
   if (QUIC_FAILED(Status = MsQuic->ConnectionStart(c_ctx->Connection,
                                                    c_ctx->Configuration,
                                                    QUIC_ADDRESS_FAMILY_UNSPEC,
@@ -619,6 +623,8 @@ async_connect3(ErlNifEnv *env,
     {
       MsQuic->ConnectionClose(c_ctx->Connection);
       c_ctx->is_closed = TRUE;
+      // On behavior of Callback
+      enif_release_resource(c_ctx);
       destroy_c_ctx(c_ctx);
       return ERROR_TUPLE_2(ATOM_CONN_START_ERROR);
     }
@@ -731,10 +737,6 @@ sockname1(ErlNifEnv *env, __unused_parm__ int args, const ERL_NIF_TERM argv[])
     }
   else if (enif_get_resource(env, argv[0], ctx_stream_t, &q_ctx))
     {
-      enif_mutex_lock(((QuicerStreamCTX *)q_ctx)->lock);
-      is_closed = (((QuicerStreamCTX *)q_ctx))->is_closed;
-      enif_mutex_unlock(((QuicerStreamCTX *)q_ctx)->lock);
-
       Handle = ((QuicerStreamCTX *)q_ctx)->c_ctx->Connection;
       Level = QUIC_PARAM_LEVEL_CONNECTION;
       Param = QUIC_PARAM_CONN_LOCAL_ADDRESS;
