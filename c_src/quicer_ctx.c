@@ -58,7 +58,6 @@ init_c_ctx()
   c_ctx->acceptor_queue = AcceptorQueueNew();
   c_ctx->Connection = NULL;
   c_ctx->lock = enif_mutex_create("quicer:c_ctx");
-  c_ctx->is_closed = FALSE;
   c_ctx->TlsSecrets = NULL;
   c_ctx->ssl_keylogfile = NULL;
   c_ctx->l_ctx = NULL;

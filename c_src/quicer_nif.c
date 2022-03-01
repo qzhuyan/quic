@@ -571,6 +571,7 @@ resource_conn_dealloc_callback(__unused_parm__ ErlNifEnv *env, void *obj)
 {
   QuicerConnCTX *c_ctx = (QuicerConnCTX *)obj;
   TP_CB_3(start, (uintptr_t)c_ctx->Connection, 0);
+  MsQuic->ConnectionClose(c_ctx->Connection);
   AcceptorQueueDestroy(c_ctx->acceptor_queue);
   enif_free_env(c_ctx->env);
   enif_mutex_destroy(c_ctx->lock);
@@ -915,15 +916,8 @@ controlling_process(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
     {
 
       enif_mutex_lock(c_ctx->lock);
-      if (c_ctx->is_closed)
-        {
-          res = ERROR_TUPLE_2(ATOM_CLOSED);
-        }
-      else
-        {
-          res = connection_controlling_process(
+      res = connection_controlling_process(
               env, c_ctx, &caller, &new_owner);
-        }
       enif_mutex_unlock(c_ctx->lock);
     }
   else
