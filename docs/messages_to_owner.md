@@ -31,6 +31,12 @@ The receiver can discard any data that it already received on the stream.
 {quic, peer_send_aborted, stream_handler(), ErrorCode}
 ```
 
+### peer_receive_aborted
+Received a `STOP_SENDING` frame, means we should cease transmission on a stream.
+```
+{quic, peer_receive_aborted, stream_handler(), ErrorCode :: integer()}
+```
+
 ### stream closed, shutdown_completed,
 
 Both directions of the stream have been shut down.

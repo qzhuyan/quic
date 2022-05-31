@@ -270,6 +270,7 @@ ERL_NIF_TERM ATOM_TRANS_SHUTDOWN;
 ERL_NIF_TERM ATOM_SHUTDOWN;
 ERL_NIF_TERM ATOM_PEER_SEND_SHUTDOWN;
 ERL_NIF_TERM ATOM_PEER_SEND_ABORTED;
+ERL_NIF_TERM ATOM_PEER_RECEIVE_ABORTED;
 ERL_NIF_TERM ATOM_SEND_COMPLETE;
 ERL_NIF_TERM ATOM_SEND_DGRAM_COMPLETE;
 ERL_NIF_TERM ATOM_EINVAL;
@@ -555,6 +556,7 @@ ERL_NIF_TERM ATOM_ALLOW_INSECURE;
   ATOM(ATOM_SHUTDOWN, shutdown);                                              \
   ATOM(ATOM_PEER_SEND_SHUTDOWN, peer_send_shutdown);                          \
   ATOM(ATOM_PEER_SEND_ABORTED, peer_send_aborted);                            \
+  ATOM(ATOM_PEER_RECEIVE_ABORTED, peer_receive_aborted);                      \
   ATOM(ATOM_SEND_COMPLETE, send_completed);                                   \
   ATOM(ATOM_SEND_DGRAM_COMPLETE, send_dgram_completed);                       \
   ATOM(ATOM_EINVAL, einval);                                                  \

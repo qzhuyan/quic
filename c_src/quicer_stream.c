@@ -140,6 +140,15 @@ ServerStreamCallback(HQUIC Stream, void *Context, QUIC_STREAM_EVENT *Event)
 
       is_destroy = TRUE;
       break;
+    case QUIC_STREAM_EVENT_PEER_RECEIVE_ABORTED:
+      // @TODO TEST ME
+      report = enif_make_tuple4(
+          env,
+          ATOM_QUIC,
+          ATOM_PEER_RECEIVE_ABORTED,
+          enif_make_resource(env, s_ctx),
+          enif_make_uint64(env, Event->PEER_RECEIVE_ABORTED.ErrorCode));
+      enif_send(NULL, &(s_ctx->owner->Pid), NULL, report);
     default:
       break;
     }
