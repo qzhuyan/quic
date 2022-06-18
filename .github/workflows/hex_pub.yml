@@ -10,6 +10,19 @@ jobs:
       - name: Check out
         uses: actions/checkout@v2
 
+      - uses: gleam-lang/setup-erlang@v1.1.2
+        with:
+          otp-version: 24.3.3
+
+      - name: install rebar3
+        run: |
+          wget https://s3.amazonaws.com/rebar3/rebar3 && chmod +x rebar3
+          cp ./rebar3 /usr/local/bin/rebar3
+
+      - name: make edocs
+        run: |
+          make doc
+
       - name: Publish to Hex.pm
         uses: erlangpack/github-action@v1
         env:
