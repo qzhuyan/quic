@@ -85,8 +85,8 @@
 
         %% @TODO following two tcs are failing due to:
         %  https://github.com/microsoft/msquic/issues/2033
-        % , tc_setopt_conn_local_addr/1
-        % , tc_setopt_conn_local_addr_in_use/1
+        , tc_setopt_conn_local_addr/1
+        , tc_setopt_conn_local_addr_in_use/1
         , tc_setopt_stream_priority/1
         , tc_strm_opt_active_n/1
         , tc_strm_opt_active_once/1
