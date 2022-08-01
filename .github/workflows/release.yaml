@@ -1,11 +1,11 @@
 name: release
 
 on:
-  push:
-    tags:
-      - "*"
+  - push
+
 jobs:
   mac:
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -65,7 +65,7 @@ jobs:
       fail-fast: false
       matrix:
         otp:
-          - 23.3.4.9-4
+          #- 23.3.4.9-4
           - 24.2.1-1
         elixir:
           - 1.13.4
@@ -73,15 +73,15 @@ jobs:
           - amd64
           - arm64
         os:
-          - ubuntu20.04
-          - ubuntu18.04
-          - ubuntu16.04
-          - debian11
-          - debian10
-          - debian9
-          - el7
+          #- ubuntu20.04
+          #- ubuntu18.04
+          #- ubuntu16.04
+          #- debian11
+          #- debian10
+          #- debian9
+          #- el7
           - el8
-          - alpine3.15.1
+          #- alpine3.15.1
     runs-on: ubuntu-latest
 
     steps:
@@ -118,7 +118,7 @@ jobs:
     needs:
       - mac
       - linux
-    if: startsWith(github.ref, 'refs/tags/')
+    #if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/download-artifact@v2
         with:
