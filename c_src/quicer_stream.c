@@ -489,7 +489,7 @@ send3(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
       return ERROR_TUPLE_2(ATOM_BADARG);
     }
 
-  enif_mutex_lock(s_ctx->lock);
+  //enif_mutex_lock(s_ctx->lock);
 
   send_ctx->s_ctx = s_ctx;
 
@@ -522,7 +522,7 @@ send3(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 ErrorExit:
   destroy_send_ctx(send_ctx);
 Exit:
-  enif_mutex_unlock(s_ctx->lock);
+  //enif_mutex_unlock(s_ctx->lock);
   return res;
 }
 
