@@ -15,9 +15,42 @@
 %%--------------------------------------------------------------------
 -module(quicer_conn_acceptor).
 -include_lib("snabbkaffe/include/snabbkaffe.hrl").
+-include("quicer_types.hrl").
 
 -behaviour(gen_server).
 
+%%      init while spawn
+%%      a. init callback state
+-callback init(_Args) -> _State.
+
+%%      Handle new incoming connection
+%%      a. Reject (close) the connection
+%%      b. Continue handshake,
+%%      c. Spawn stream acceptors and continue with handshake. (accept new stream call could be sync/async)
+-callback new_conn(connection_handler(), _OldState) -> {ok, _NewState} | {error, term()}.
+
+%%      Handle new stream
+%%      a. spawn new process to handle this stream
+%%      b. just be the owner of stream
+%%
+%%      Suggest to keep a stream & owner pid mapping in the callback state
+-callback new_stream(stream_handler(), _OldState) -> {ok, pid()} | {error, term()}.
+
+%%      Handle connection handshake done
+%%      a. init new streams from the Server
+-callback connected(connection_handler(), _OldState) -> {ok, _NewState} | {error, term()}.
+
+%%      Handle connection shutdown initiated by peer
+%%
+-callback shutdown(connection_handler(), _OldState) -> {ok, _State}.
+
+%%      Handle stream closed, this means peer side shutdown the receiving
+%%      but our end could still keep sending
+%% a. forward a msg to the (new) owner process
+%%
+-callback stream_closed(stream_handler(), _OldState) -> {ok, _State}.
+
+-optional_callbacks([stream_closed/2]).
 %% API
 -export([start_link/3]).
 
@@ -36,8 +69,6 @@
                , callback :: module()
                , callback_state :: map()
                }).
-
--type conn_opts() :: map().
 
 %%%===================================================================
 %%% API
@@ -150,6 +181,51 @@ handle_info({quic, connected, C}, #state{ conn = C
                                         , callback_state = CbState} = State) ->
     ?tp(quic_connected_slow, #{module=>?MODULE, conn=>C}),
     {ok, NewCBState} = M:connected(C, CbState),
+    {noreply, State#state{ callback_state = NewCBState }};
+
+handle_info({quic, new_stream, Stream}, #state{ conn = C
+                                              , callback = M
+                                              , callback_state = CbState} = State) ->
+    %% Best practice:
+    %%   One connection will have a control stream that have the same life cycle as the connection.
+    %%   The connection may spawn one *control stream* acceptor before starting the handshake
+    %%   AND the stream acceptor should accept new stream so it will likely pick up the control stream
+    %% note, by desgin, control stream doesn't have to be the first stream initiated.
+    %% here, it handles new stream when there is no available stream acceptor for the connection.
+    ?tp(debug, #{module=>?MODULE, conn=>C, stream=>Stream, event=>new_stream}),
+    NewCBState = case erlang:function_exported(M, new_stream, 2) of
+                     true ->
+                         case M:new_stream(Stream, CbState) of
+                             {ok, NewS} -> NewS;
+                             {error, Reason} when is_integer(Reason) -> %% @TODO most likely it won't be a integer
+                                 %% We ignore the return, stream could be closed already.
+                                 _ = quicer:async_shutdown_connection(Stream,
+                                                                      ?QUIC_STREAM_SHUTDOWN_FLAG_ABORT, Reason)
+                         end;
+                     false ->
+                         %% Backward compatibility
+                         CbState
+                 end,
+    {noreply, State#state{ callback_state = NewCBState }};
+
+
+%% handle stream close, the process is the owner of stream or it is during ownership handoff.
+handle_info({quic, closed, Stream, ConnectionShutdownFlag},
+            #state{callback = M,
+                   conn = C,
+                   callback_state = CbState} = State)->
+    ?tp(debug, #{module=>?MODULE, conn=>C, stream=>Stream, event=>stream_closed}),
+    NewCBState = case erlang:function_exported(M, stream_closed, 3) of
+                     true ->
+                         case M:stream_closed(Stream, ConnectionShutdownFlag, CbState) of
+                             {ok, NewCBState0} ->
+                                 NewCBState0;
+                             {error, _Reason} ->
+                                 CbState
+                         end;
+                     false ->
+                         CbState
+                 end,
     {noreply, State#state{ callback_state = NewCBState }};
 
 handle_info({'EXIT', _Pid, {shutdown, normal}}, State) ->

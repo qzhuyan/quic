@@ -139,6 +139,8 @@ all() ->
   , tc_conn_resume_nst_with_stream
   , tc_conn_resume_nst_async
   , tc_listener_no_acceptor
+    %% multistreams
+  , tc_multi_streams
   ].
 
 %%--------------------------------------------------------------------
@@ -1259,6 +1261,55 @@ tc_listener_no_acceptor(Config) ->
                                        , tag := "start"
                                        },
                                       Trace))
+               end),
+  ok.
+
+
+tc_multi_streams(Config) ->
+  Port = select_port(),
+  application:ensure_all_started(quicer),
+  ListenerOpts = [{conn_acceptors, 32} | default_listen_opts(Config)],
+  ConnectionOpts = [ {conn_callback, quicer_server_conn_callback}
+                   , {stream_acceptors, 32}
+                     | default_conn_opts()],
+  StreamOpts = [ {stream_callback, quicer_echo_server_stream_callback}
+               | default_stream_opts() ],
+  Options = {ListenerOpts, ConnectionOpts, StreamOpts},
+  ct:pal("Listener Options: ~p", [Options]),
+  ?check_trace(#{timetrap => 10000},
+               begin
+                 {ok, _QuicApp} = quicer:start_listener(mqtt, Port, Options),
+                 {ok, Conn} = quicer:connect("localhost", Port,
+                                             [{peer_bidi_stream_count, 10} | default_conn_opts()], 5000),
+                 {ok, Stm} = quicer:start_stream(Conn, [{active, true}]),
+                 {ok, Stm2} = quicer:start_stream(Conn, [{active, true}]),
+                 {ok, 5} = quicer:async_send(Stm, <<"ping1">>),
+                 ct:pal("ping1 sent"),
+                 {ok, 5} = quicer:async_send(Stm2, <<"ping2">>),
+                 ct:pal("ping2 sent"),
+                 receive
+                   {quic, <<"ping1">>, Stm,  _, _, _} -> ok
+                 after 100 -> ct:fail("no ping1")
+                 end,
+                 receive
+                   {quic, <<"ping2">>, Stm2,  _, _, _} -> ok
+                 after 100 -> ct:fail("no ping2")
+                 end
+               end,
+               fun(_Result, Trace) ->
+                   ct:pal("Trace is ~p", [Trace]),
+                   ?assert(?causality(
+                              #{ ?snk_kind := debug
+                               , event := post_init
+                               , module := quicer_stream
+                               , stream := _STREAM0
+                               },
+                              #{ ?snk_kind := debug
+                               , event := handoff_stream
+                               , module := quicer_server_conn_callback
+                               , stream := _STREAM0
+                               },
+                              Trace))
                end),
   ok.
 

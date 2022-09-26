@@ -10,7 +10,7 @@ new_stream(_Stream, _Opts) ->
 
 handle_stream_data(Stream, Bin, _Opts, #{sent_bytes := Cnt} = State) ->
     {ok, Size} = quicer:send(Stream, Bin),
-    {ok, State#{ sent_bytes => Cnt + Size}}.
+    {ok, State#{ sent_bytes => Cnt + Size }}.
 
 shutdown(Stream) ->
     quicer:async_close_stream(Stream).
