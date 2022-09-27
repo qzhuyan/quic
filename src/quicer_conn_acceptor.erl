@@ -240,6 +240,18 @@ handle_info({'EXIT', _Pid, normal}, State) ->
     %% @todo
     {noreply, State};
 
+handle_info({quic, transport_shutdown, C, Reason}, #state{ conn = C
+                                                         , callback = M
+                                                         , callback_state = CbState} = State) ->
+    ?tp(quic_transport_shutdown, #{module=>?MODULE, conn=>C}),
+    case erlang:function_exported(M, transport_shutdown, 3) of
+        true ->
+            {ok, NewCBState} = M:transport_shutdown(C, Reason, CbState),
+            {noreply, State#state{ callback_state = NewCBState }};
+        false ->
+            {noreply, State}
+    end;
+
 handle_info({quic, shutdown, C}, #state{conn = C, callback = M,
                                         callback_state = CBState} = State) ->
     ?tp(quic_shutdown, #{module=>?MODULE}),

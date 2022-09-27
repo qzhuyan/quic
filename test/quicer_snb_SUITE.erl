@@ -1012,8 +1012,12 @@ tc_conn_resume_old(Config) ->
 %%% Resume connection with connection opt: `nst'
 tc_conn_resume_nst(Config) ->
   Port = select_port(),
-  ServerResumeCBFun = fun(_Conn, Data, S) -> %% @TODO test Non empty 'Resume Data'
+  %% @TODO test Non empty 'Resume Data'
+  ExpectedSessionData = false,
+  ServerResumeCBFun = fun(_Conn, Data, S) ->
                           ct:pal("recv resume data: ~p", [Data]),
+                          Data =/= ExpectedSessionData andalso
+                            ct:fail("Unexpected session data: ~p", [Data]),
                           {ok, S}
                       end,
   ListenerOpts = [{conn_acceptors, 32} | default_listen_opts(Config)],
