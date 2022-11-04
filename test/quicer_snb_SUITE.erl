@@ -1439,6 +1439,7 @@ tc_accept_stream_active_N(Config) ->
                                              [{peer_bidi_stream_count, 10}, {peer_unidi_stream_count, 1} | default_conn_opts()], 5000),
                  {ok, Stm} = quicer:start_stream(Conn, [{active, true}]),
                  {ok, Stm2} = quicer:start_stream(Conn, [{active, true}, {open_flag, ?QUIC_STREAM_OPEN_FLAG_UNIDIRECTIONAL}]),
+                 {ok, Conn} = quicer:async_accept_stream(Conn, [{active, 2}]), %% Set active to 2
                  {ok, 5} = quicer:async_send(Stm, <<"ping1">>),
                  ct:pal("ping1 sent"),
                  {ok, 5} = quicer:async_send(Stm2, <<"ping2">>),
@@ -1448,7 +1449,12 @@ tc_accept_stream_active_N(Config) ->
                  after 100 -> ct:fail("no ping1")
                  end,
 
-                 {ok, Stm3} = quicer:accept_stream(Conn, [{active, 2}]), %% Set active to 2
+                 Stm3 = receive
+                          {quic, new_stream, StreamFromServer, #{is_orphan := false}} ->
+                            StreamFromServer
+                        after 100 ->
+                            ct:fail("accept Stm3 from server fail")
+                        end,
                  receive
                    {quic, <<"ping2">>, Stm3,  _} -> ok
                  after 100 -> ct:fail("no ping2")
