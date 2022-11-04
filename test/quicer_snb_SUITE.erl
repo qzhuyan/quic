@@ -145,6 +145,7 @@ all() ->
   , tc_listener_no_acceptor
   , tc_conn_stop_notify_acceptor
   , tc_accept_stream_active_once
+  , tc_accept_stream_active_N
     %% multistreams
   , tc_multi_streams
   , tc_multi_streams_example_server_1
