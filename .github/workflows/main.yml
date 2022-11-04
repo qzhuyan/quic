@@ -61,6 +61,7 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         otp:
           - 23.3.4.5
