@@ -817,9 +817,9 @@ tc_conn_gc(Config) ->
                                         5000, 1000),
                  {SRid, CRid}
                end,
-               fun({_SRid, _CRid}, Trace) ->
+               fun({_SRid, CRid}, Trace) ->
                    ct:pal("Trace is ~p", [Trace]),
-                   ct:pal("Target SRid: ~p, CRid: ~p", [_SRid, _CRid]),
+                   ct:pal("Target SRid: ~p, CRid: ~p", [_SRid, CRid]),
                    %% check that at client side, GC is triggered after connection close.
                    %% check that at server side, connection was shutdown by client.
                    ?assert(?strict_causality(#{ ?snk_kind := debug
@@ -827,12 +827,12 @@ tc_conn_gc(Config) ->
                                               , function := "ClientConnectionCallback"
                                               , tag := "event"
                                               , mark := ?QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE
-                                              , resource_id := _CRid
+                                              , resource_id := CRid
                                               },
                                              #{ ?snk_kind := debug
                                               , context := "callback"
                                               , function := "resource_conn_dealloc_callback"
-                                              , resource_id := _CRid
+                                              , resource_id := CRid
                                               , tag := "end"},
                                              Trace)),
                    ?assert(?strict_causality(#{ ?snk_kind := debug
@@ -849,8 +849,24 @@ tc_conn_gc(Config) ->
                                               , mark := ?QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE
                                               , tag := "event"},
                                              Trace)),
-                   ?assertEqual(1, length([ E || #{function := "resource_conn_dealloc_callback"
-                                                  , tag := "end"} = E <- Trace]))
+
+
+                   TraceEvents = flush_previous_run(Trace, fun(#{ ?snk_kind := debug
+                                                                , context := "callback"
+                                                                , function := "ClientConnectionCallback"
+                                                                , mark := ?QUIC_CONNECTION_EVENT_CONNECTED
+                                                                , resource_id := Rid
+                                                                , tag := "event"
+                                                                }) when Rid == CRid ->
+                                                               true;
+                                                              (_) ->
+                                                               false
+                                                           end
+                                                   ),
+                   ?assertEqual(1, length([ E || #{ function := "resource_conn_dealloc_callback"
+                                                  , resource_id := Rid
+                                                  , tag := "end"} = E <- TraceEvents, Rid == CRid])
+                               )
                end),
   ct:pal("stop listener"),
   ok = quicer:stop_listener(mqtt),
@@ -885,6 +901,7 @@ tc_conn_no_gc(Config) ->
                                          {ok, <<"ping">>} = quicer:recv(Stm, 4),
                                          quicer:shutdown_connection(Conn, 0, 0)
                                      end),
+                 {ok, CRid} = quicer:get_conn_rid(Conn),
                  %% Server Process
                  {ok, #{resource_id := SRid}}
                    = ?block_until(#{ ?snk_kind := debug
@@ -899,6 +916,7 @@ tc_conn_no_gc(Config) ->
                                    , context := "callback"
                                    , function := "ClientConnectionCallback"
                                    , mark := ?QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE
+                                   , resource_id := CRid
                                    , tag := "event" },
                                   5000, 1000),
                  %% Give it time for gc that should not happen on var 'Conn', could be the source of flakiness.
@@ -930,10 +948,22 @@ tc_conn_no_gc(Config) ->
                                               , mark := ?QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE
                                               , tag := "event"},
                                              Trace)),
+                   TraceEvents = flush_previous_run(Trace, fun(#{ ?snk_kind := debug
+                                                                , context := "callback"
+                                                                , function := "ClientConnectionCallback"
+                                                                , mark := ?QUIC_CONNECTION_EVENT_CONNECTED
+                                                                , resource_id := Rid
+                                                                , tag := "event"
+                                                                }) when Rid == CRid ->
+                                                               true;
+                                                              (_) ->
+                                                               false
+                                                           end
+                                                   ),
                    %% Check that there is no GC
                    ?assertEqual(0, length([ E || #{ function := "resource_conn_dealloc_callback"
                                                   , resource_id := Rid
-                                                  } = E <- Trace, Rid == CRid])),
+                                                  } = E <- TraceEvents, Rid == CRid])),
                  %% Just keep the ref till end
                   ?assert(Conn =/= undefined)
                end),
@@ -1001,13 +1031,14 @@ tc_conn_no_gc_2(Config) ->
                  Block = ?block_until(#{ ?snk_kind := debug
                                        , context := "callback"
                                        , function := "resource_conn_dealloc_callback"
+                                       , resource_id := CRid
                                        , tag := "end"},
                                       5000, 1000),
                  case Block of
                    timeout -> ok;
                    {ok, #{ resource_id := CRid }} ->
                      %% Don't fail the testcase here, we need the traces in post run
-                     ct:pal("!!!Error!!!: Rid: ~p of ~p should not be released"
+                     ct:pal("!!!Error!!!: Rid: ~p of ~p should not be released~n"
                             "Check snb traces for more",
                             [CRid, ClientConn]);
                    {ok, #{ resource_id := _OtherRid }} ->
@@ -1037,9 +1068,21 @@ tc_conn_no_gc_2(Config) ->
                                               , tag := "event"},
                                              Trace)),
                    %% Check that there is no GC
+                   TraceEvents = flush_previous_run(Trace, fun(#{ ?snk_kind := debug
+                                                                , context := "callback"
+                                                                , function := "ClientConnectionCallback"
+                                                                , mark := ?QUIC_CONNECTION_EVENT_CONNECTED
+                                                                , resource_id := Rid
+                                                                , tag := "event"
+                                                                }) when Rid == CRid ->
+                                                               true;
+                                                              (_) ->
+                                                               false
+                                                           end
+                                                   ),
                    ?assertEqual(0, length([ E || #{ function := "resource_conn_dealloc_callback"
                                                   , resource_id := Rid
-                                                  } = E <- Trace, Rid == CRid]))
+                                                  } = E <- TraceEvents, Rid == CRid]))
                end),
   ct:pal("stop listener"),
   ok = quicer:stop_listener(mqtt),
@@ -2150,6 +2193,22 @@ wait_for_die([Pid | T]) ->
       wait_for_die(T)
   end.
 
+%% @doc find the starting point of the test run
+%%  some GC test may hit the Rid from previous run
+flush_previous_run([], _StartingPointFun) ->
+  %%% Oops, maybe wrong starting point
+  [];
+flush_previous_run([StartingPoint | T], StartingPoint) ->
+  T;
+flush_previous_run([Event | T], StartingPointFun) when is_function(StartingPointFun) ->
+  case StartingPointFun(Event) of
+    true ->
+      T;
+    false ->
+      flush_previous_run(T, StartingPointFun)
+  end;
+flush_previous_run([_H | T], StartingPoint) ->
+  flush_previous_run(T, StartingPoint).
 %%%_* Emacs ====================================================================
 %%% Local Variables:
 %%% allout-layout: t
