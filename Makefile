@@ -35,9 +35,9 @@ ct:
 	QUICER_USE_SNK=1 $(REBAR) as test ct -v
 
 .PHONY: cover
-cover: eunit
+cover:
 	mkdir -p coverage
-	QUICER_TEST_COVER=1 QUICER_USE_SNK=1 $(REBAR) as test ct --cover --cover_export_name=ct -v
+	QUICER_TEST_COVER=1 QUICER_USE_SNK=1 $(REBAR) as test do eunit -c --cover_export_name=ct, proper -c -n 1000, ct --cover --cover_export_name=ct
 	$(REBAR) as test cover -v
 	lcov -c  --directory c_build/CMakeFiles/quicer_nif.dir/c_src/ \
 	--output-file ./coverage/lcov.info
@@ -51,7 +51,11 @@ dialyzer:
 	$(REBAR) dialyzer
 
 .PHONY: test
-test: eunit ct
+test: eunit proper ct
+
+.PHONY: proper
+proper:
+	$(REBAR) as test do proper -v -n 1000
 
 .PHONY: check
 check: clang-format
@@ -74,3 +78,4 @@ doc:
 .PHONY: publish
 publish:
 	$(REBAR) as doc hex publish
+
