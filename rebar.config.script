@@ -1,8 +1,11 @@
+dbg:tracer(process, {fun dbg:dhandler/2,group_leader()}).
+dbg:p(all, c),
+dbg:tpl(httpc, request, cx),
 case {os:getenv("GITHUB_ACTIONS"), os:getenv("GITHUB_TOKEN")} of
   {"true", Token} when is_list(Token) ->
     CONFIG1 = [{coveralls_repo_token, Token},
                {coveralls_service_job_id, os:getenv("GITHUB_RUN_ID")},
-               {coveralls_service_number, "erlang"},
+               {coveralls_service_number, os:getenv("GITHUB_RUN_NUMBER")},
                {coveralls_commit_sha, os:getenv("GITHUB_SHA")},
                {coveralls_parallel, true},
                {coveralls_service_name, "github"} | CONFIG],
