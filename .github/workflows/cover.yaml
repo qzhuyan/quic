@@ -44,13 +44,13 @@ jobs:
         debug: true
 
     - name: Coveralls Erl
+      if: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_SHA: ${{ github.sha }}
         GITHUB_REF: ${{ github.ref_name }}
-        DIAGNOSTIC: "1"
       run: |
-        rebar3 as test coveralls send;
+        DIAGNOSTIC=1 rebar3 as test coveralls send;
         sleep 5; # for debug printouts
 
     - name: Coveralls Finished
