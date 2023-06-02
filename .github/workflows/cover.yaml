@@ -48,6 +48,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_SHA: ${{ github.sha }}
         GITHUB_REF: ${{ github.ref_name }}
+        DIAGNOSTIC: "1"
       run: |
         rebar3 as test coveralls send;
         sleep 5; # for debug printouts
@@ -56,4 +57,6 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        git-branch: ${{ github.ref_name }}
+        git-commit: ${{ github.sha }}
         parallel-finished: true
