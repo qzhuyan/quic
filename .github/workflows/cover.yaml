@@ -39,7 +39,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         flag-name: run-c-lcov
         parallel: true
-        github-branch: ${{ github.ref_name }}
+        git-branch: ${{ github.ref_name }}
         git-commit: ${{ github.sha }}
 
     - name: Coveralls Erl
