@@ -44,7 +44,6 @@ jobs:
         debug: true
 
     - name: Coveralls Erl
-      if: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_SHA: ${{ github.sha }}
