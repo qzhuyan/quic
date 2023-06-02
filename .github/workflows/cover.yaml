@@ -39,7 +39,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         flag-name: run-c-lcov
         parallel: true
-        service_job_id: ${{ github.run_id }}
+        service_job_id: "1"
         git-branch: ${{ github.ref_name }}
         git-commit: ${{ github.sha }}
         debug: true
