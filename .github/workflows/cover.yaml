@@ -39,7 +39,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         flag-name: run-c-lcov
         parallel: true
-        service_job_id: $${{ github.run_id }}
+        service_job_id: ${{ github.run_id }}
         git-branch: ${{ github.ref_name }}
         git-commit: ${{ github.sha }}
         debug: true
@@ -49,7 +49,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_SHA: ${{ github.sha }}
         GITHUB_REF: ${{ github.ref_name }}
-      run: rebar3 as test coveralls send
+      run: |
+        rebar3 as test coveralls send;
+        sleep 5; # for debug printouts
 
     - name: Coveralls Finished
       uses: coverallsapp/github-action@master
