@@ -7,6 +7,7 @@ case {os:getenv("GITHUB_ACTIONS"), os:getenv("GITHUB_TOKEN")} of
                {coveralls_service_job_id, os:getenv("GITHUB_JOB")},
                %% Because GITHUB_RUN_ID is used in usedd
                {coveralls_service_number, os:getenv("GITHUB_RUN_ID")},
+               {coveralls_service_job_number, "2"},
                {coveralls_flag_name, "erlang"},
                {coveralls_commit_sha, os:getenv("GITHUB_SHA")},
                {coveralls_parallel, true},
