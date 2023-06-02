@@ -40,6 +40,7 @@ cover:
 	QUICER_TEST_COVER=1 QUICER_USE_SNK=1 $(REBAR) as test do eunit -c --cover_export_name=ct, proper -c -n 1000, ct --cover --cover_export_name=ct
 	$(REBAR) as test cover -v
 	lcov -c  --directory c_build/CMakeFiles/quicer_nif.dir/c_src/ \
+	--exclude "${PWD}/msquic/src/inc/*" \
 	--output-file ./coverage/lcov.info
 
 .PHONY: cover-html
