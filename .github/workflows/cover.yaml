@@ -1,4 +1,4 @@
-on: ["push", "pull_request"]
+on: ["push"]
 
 name: Test Coveralls
 
@@ -34,7 +34,7 @@ jobs:
         make cover
 
     - name: Coveralls C
-      uses: coverallsapp/github-action@master
+      uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         flag-name: run-c-lcov
@@ -53,7 +53,7 @@ jobs:
         sleep 5; # for debug printouts
 
     - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
+      uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         git-branch: ${{ github.ref_name }}
