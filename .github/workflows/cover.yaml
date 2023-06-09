@@ -50,7 +50,7 @@ jobs:
         GITHUB_REF: ${{ github.ref_name }}
       run: |
         DIAGNOSTIC=1 rebar3 as test coveralls send;
-        sleep 5; # for debug printouts
+        sleep 10; # for debug printouts
 
     - name: Coveralls Finished
       uses: coverallsapp/github-action@v2
