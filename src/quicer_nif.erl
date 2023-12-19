@@ -29,6 +29,7 @@
     start_listener/3,
     stop_listener/1,
     close_listener/1,
+    reload_cred/2,
     async_connect/3,
     async_accept/2,
     async_handshake/1,
@@ -78,7 +79,8 @@
     get_registration_name/0,
     get_listeners/0,
     get_connections/0,
-    get_owner/0
+    get_owner/0,
+    reload_cred/0
 ]).
 
 %% NIF fuction return types
@@ -90,6 +92,7 @@
 -type get_listeners() :: [listener_handle()].
 -type get_connections() :: [connection_handle()].
 -type get_owner() :: {ok, pid()} | {error, undefined | badarg}.
+-type reload_cred() :: ok | {error, badarg | closed | verify | cert_error | atom_reason()}.
 
 %% @NOTE: In embedded mode, first all modules are loaded. Then all on_load functions are called.
 -on_load(init/0).
@@ -366,6 +369,15 @@ get_connections() ->
 
 -spec get_connections(reg_handle()) -> [connection_handle()] | {error, badarg}.
 get_connections(_RegHandle) ->
+    erlang:nif_error(nif_library_not_loaded).
+
+-spec reload_cred(listener_handle(), #{
+    certfile := file:filename(),
+    keyfile := file:filename(),
+    verify => none | peer | verify_peer | verify_none,
+    password => string()
+}) -> reload_cred().
+reload_cred(_, _) ->
     erlang:nif_error(nif_library_not_loaded).
 
 %% Internals

@@ -589,6 +589,64 @@ tc_verify_none_butwith_cacert(Config) ->
     quicer:terminate_listener(?FUNCTION_NAME),
     ok.
 
+tc_reload_cred(Config) ->
+    DataDir = ?config(data_dir, Config),
+    Port = select_port(),
+    %% When Listener is configured with CA certfile but verify_none
+    LConfig = default_listener_opts(Config, verify_none),
+    ConnectionOpts = [
+        {conn_callback, quicer_server_conn_callback},
+        {stream_acceptors, 32}
+        | default_conn_opts()
+    ],
+    StreamOpts = [
+        {stream_callback, quicer_echo_server_stream_callback}
+        | default_stream_opts()
+    ],
+    Options = {LConfig, ConnectionOpts, StreamOpts},
+    {ok, _ListenerProc} = quicer:spawn_listener(?FUNCTION_NAME, Port, Options),
+
+    ClientConn = [
+        {verify, verify_peer},
+        {cacertfile, filename:join(DataDir, "ca.pem")},
+        {peer_unidi_stream_count, 3},
+        {alpn, ["sample"]}
+        | Config
+    ],
+
+    %% Then the connection should succeed
+    {ok, Conn} =
+        quicer:connect(
+            "localhost",
+            Port,
+            ClientConn,
+            5000
+        ),
+    quicer:close_connection(Conn),
+
+    %% When Listener is reloaded with CA certfile
+    {ok, LH} = quicer_listener:get_listener_handle(?FUNCTION_NAME),
+
+    NewCred = #{
+        cacertfile => filename:join(DataDir, "other-ca.pem"),
+        certfile => filename:join(DataDir, "other-server.pem"),
+        keyfile => filename:join(DataDir, "other-server.key")
+    },
+    ok = quicer:reload_cred(LH, NewCred),
+
+    %% Then the connection should succeed
+    ?assertMatch(
+        {error, transport_down, #{error := _, status := bad_certificate}},
+        quicer:connect(
+            "localhost",
+            Port,
+            ClientConn,
+            5000
+        )
+    ),
+    quicer:terminate_listener(?FUNCTION_NAME),
+    ok.
+
 tc_get_listeners_from_reg(Config) ->
     Port = select_port(),
     RegH = proplists:get_value(quic_registration, Config, global),

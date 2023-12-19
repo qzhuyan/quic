@@ -652,7 +652,7 @@ get_listenersX(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 ERL_NIF_TERM
 get_listener_owner1(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
-  QuicerListenerCTX *l_ctx;
+  QuicerListenerCTX *l_ctx = NULL;
   ERL_NIF_TERM res = ATOM_UNDEFINED;
   CXPLAT_FRE_ASSERT(argc == 1);
   if (!enif_get_resource(env, argv[0], ctx_listener_t, (void **)&l_ctx))
@@ -663,4 +663,92 @@ get_listener_owner1(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
   res = SUCCESS(enif_make_pid(env, &(l_ctx->listenerPid)));
   enif_mutex_unlock(l_ctx->lock);
   return res;
+}
+
+ERL_NIF_TERM
+reload_cred2(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
+{
+  CXPLAT_FRE_ASSERT(argc == 2);
+  ERL_NIF_TERM listener = argv[0];
+  ERL_NIF_TERM options = argv[1];
+  QuicerListenerCTX *l_ctx = NULL;
+  QUIC_CREDENTIAL_CONFIG CredConfig;
+  BOOLEAN is_verify = FALSE;
+  char *cacertfile = NULL;
+  ERL_NIF_TERM ret = ATOM_OK;
+  QUIC_STATUS Status = QUIC_STATUS_SUCCESS;
+
+  if (!enif_get_resource(env, listener, ctx_listener_t, (void **)&l_ctx))
+    {
+      return ERROR_TUPLE_2(ATOM_BADARG);
+    }
+
+  CxPlatZeroMemory(&CredConfig, sizeof(CredConfig));
+
+  CredConfig.Flags = QUIC_CREDENTIAL_FLAG_NONE;
+
+  if (!parse_cert_options(env, options, &CredConfig))
+    {
+      return ERROR_TUPLE_2(ATOM_QUIC_TLS);
+    }
+
+  if (!parse_verify_options(env, options, &CredConfig, TRUE, &is_verify))
+    {
+      return ERROR_TUPLE_2(ATOM_VERIFY);
+    }
+
+  if (!parse_cacertfile_option(env, options, &cacertfile))
+    {
+      // TLS opt error not file content error
+      free(cacertfile);
+      cacertfile = NULL;
+      free_certificate(&CredConfig);
+      return ERROR_TUPLE_2(ATOM_CACERTFILE);
+    }
+
+  if (is_verify && cacertfile)
+    {
+      l_ctx->cacertfile = cacertfile;
+      // We do our own certificate verification against the certificates
+      // in cacertfile
+      // @see QUIC_CONNECTION_EVENT_PEER_CERTIFICATE_RECEIVED
+      CredConfig.Flags |= QUIC_CREDENTIAL_FLAG_INDICATE_CERTIFICATE_RECEIVED;
+      CredConfig.Flags |= QUIC_CREDENTIAL_FLAG_NO_CERTIFICATE_VALIDATION;
+
+      // @TODO we shall set only when needed.
+      if (!build_trustedstore(l_ctx->cacertfile, &l_ctx->trusted_store))
+        {
+          ret = ERROR_TUPLE_2(ATOM_CERT_ERROR);
+          goto exit;
+        }
+    }
+  else
+    { // since we don't use cacertfile, free it
+      free(cacertfile);
+      cacertfile = NULL;
+    }
+
+  if (!get_listener_handle(l_ctx))
+    {
+      ret = ERROR_TUPLE_2(ATOM_CLOSED);
+      goto exit;
+    }
+
+  Status = MsQuic->ConfigurationLoadCredential(
+      l_ctx->config_resource->Configuration, &CredConfig);
+  put_listener_handle(l_ctx);
+
+  if (QUIC_FAILED(Status))
+    {
+      ret = ERROR_TUPLE_2(ATOM_STATUS(Status));
+      goto exit;
+    }
+
+  // @FIXME: LEAK: before return we MUST unload the old credconfig but how?
+  return ret;
+
+exit: // errors..
+  free(cacertfile);
+  free_certificate(&CredConfig);
+  return ret;
 }

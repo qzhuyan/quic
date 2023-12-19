@@ -21,7 +21,8 @@
 -export([
     start_link/3,
     start_listener/3,
-    stop_listener/1
+    stop_listener/1,
+    get_listener_handle/1
 ]).
 
 %% gen_server callbacks
@@ -72,6 +73,15 @@ start_listener(Name, ListenOn, Options) ->
 stop_listener(Name) ->
     quicer_listener_sup:stop_listener(Name).
 
+-spec get_listener_handle(Name :: listener_name()) ->
+    {ok, L :: quicer:listener_handle()} | {error, term()}.
+get_listener_handle(Name) ->
+    case quicer_listener_sup:listener(Name) of
+        {ok, Pid} ->
+            gen_server:call(Pid, get_listener_handle, infinity);
+        Other ->
+            Other
+    end.
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
@@ -118,6 +128,8 @@ init([Name, ListenOn, {#{conn_acceptors := N, alpn := Alpn} = LOpts, _COpts, _SO
     | {noreply, NewState :: term(), hibernate}
     | {stop, Reason :: term(), Reply :: term(), NewState :: term()}
     | {stop, Reason :: term(), NewState :: term()}.
+handle_call(get_listener_handle, _From, #state{listener = L} = State) ->
+    {reply, {ok, L}, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

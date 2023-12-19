@@ -88,6 +88,7 @@
     negotiated_protocol/1,
     peername/1,
     peercert/1,
+    reload_cred/2,
     listeners/0,
     listener/1,
     controlling_process/2,
@@ -1028,6 +1029,15 @@ peername(Handle) ->
     {ok, CertDerEncoded :: binary()} | {error, any()}.
 peercert(Handle) ->
     quicer_nif:peercert(Handle).
+
+-spec reload_cred(listener_handle(), #{
+    certfile := file:filename(),
+    keyfile := file:filename(),
+    verify => none | peer | verify_peer | verify_none,
+    password => string()
+}) -> quicer_nif:reload_cred().
+reload_cred(Listener, Opts) ->
+    quicer_nif:reload_cred(Listener, Opts).
 
 %% @doc Return true if stream open flags has unidirectional flag set
 -spec is_unidirectional(stream_open_flags()) -> boolean().

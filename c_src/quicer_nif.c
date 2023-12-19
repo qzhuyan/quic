@@ -1564,6 +1564,7 @@ static ErlNifFunc nif_funcs[] = {
   { "setopt", 4, setopt4, 0},
   { "controlling_process", 2, controlling_process, 0},
   { "peercert", 1, peercert1, 0},
+  { "reload_cred", 2, reload_cred2, 0},
   /* for DEBUG */
   { "get_conn_rid", 1, get_conn_rid1, 1},
   { "get_stream_rid", 1, get_stream_rid1, 1},

@@ -19,10 +19,8 @@ compile:
 .PHONY: clean
 clean: distclean
 
-
 fmt:
 	rebar3 fmt
-
 
 .PHONY: distclean
 distclean:
@@ -68,10 +66,17 @@ check: clang-format
 
 .PHONY: clang-format
 clang-format:
-	clang-format-11 --Werror --dry-run c_src/*
+	clang-format-12 --Werror --dry-run c_src/*
+
+.PHONY: erlfmt
+erlfmt:
+	$(REBAR) fmt -c
+
+.PHONY: style
+style: erlfmt clang-format
 
 .PHONY: ci
-ci: test dialyzer
+ci: style test dialyzer
 
 .PHONY: tar
 tar:
