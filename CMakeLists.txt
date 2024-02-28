@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19)
 
 project(quicer)
 
@@ -22,6 +22,8 @@ EXECUTE_PROCESS(
         OUTPUT_VARIABLE Erlang_OTP_ROOT_DIR
         )
 endif()
+
+option(QUICER_FUZZTEST "build the fuzz test" OFF)
 
 if (DEFINED ENV{QUICER_VERSION})
   set(QUICER_VERSION $ENV{QUICER_VERSION})
@@ -91,6 +93,8 @@ set(QUIC_BUILD_PERF "OFF")
 
 set(QUIC_TLS_SECRETS_SUPPORT "ON")
 
+add_compile_options(-fstack-protector-all)
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/templates/quicer_vsn.hrl.in
     ${CMAKE_CURRENT_SOURCE_DIR}/include/quicer_vsn.hrl
@@ -130,6 +134,12 @@ set(SOURCES
 
 # @todo remove -DSO_ATTACH_REUSEPORT_CBPF=51
 add_compile_options(-DSO_ATTACH_REUSEPORT_CBPF=51)
+
+if (QUICER_FUZZTEST)
+  set(CMAKE_CXX_STANDARD 17)
+  add_subdirectory(fuzztest)
+  add_subdirectory(test/fuzz)
+endif()
 
 # for lttng, quicer_tp.h
 include_directories(c_src)

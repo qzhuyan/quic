@@ -68,7 +68,13 @@ typedef struct AcceptorsQueue
 } QUICER_ACCEPTOR_QUEUE;
 
 QUICER_ACCEPTOR_QUEUE *AcceptorQueueNew();
+#if defined(__cplusplus)
+extern "C" {
+#endif
 void AcceptorQueueDestroy(QUICER_ACCEPTOR_QUEUE *q);
+#if defined(__cplusplus)
+}
+#endif
 void AcceptorsQueueInit(QUICER_ACCEPTOR_QUEUE *q);
 void AcceptorEnqueue(QUICER_ACCEPTOR_QUEUE *q, ACCEPTOR *a);
 ACCEPTOR *AcceptorDequeue(QUICER_ACCEPTOR_QUEUE *q);

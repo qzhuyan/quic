@@ -102,11 +102,20 @@ AcceptorAlloc()
   return acc;
 }
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void
 AcceptorDestroy(ACCEPTOR *acc)
 {
   return CXPLAT_FREE(acc, QUICER_ACCEPTOR);
 }
+#if defined(__cplusplus)
+}
+#endif
+
+
 
 bool
 set_owner_recv_mode(ACCEPTOR *owner, ErlNifEnv *env, ERL_NIF_TERM term)

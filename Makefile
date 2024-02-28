@@ -21,7 +21,7 @@ clean: distclean
 
 
 fmt:
-	@clang-format-12 -i c_src/*
+	@clang-format-14 -i c_src/*
 	@rebar3 fmt
 
 
@@ -60,6 +60,11 @@ cover-html: cover
 .PHONY: dialyzer
 dialyzer:
 	$(REBAR) dialyzer
+
+.PHONY: fuzztest
+fuzztest:
+	CC=clang CXX=clang++ cmake -B _fuzzbuild -D QUICER_FUZZTEST=ON
+	CC=clang CXX=clang++ cmake --build _fuzzbuild
 
 .PHONY: test
 test: eunit ct
