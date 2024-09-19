@@ -70,26 +70,13 @@ jobs:
       fail-fast: false
       matrix:
         otp:
-          - 25.3.2-2
           - 26.2.5.2-1
         openssl:
-          - openssl3
           - openssl
         arch:
           - amd64
-          - arm64
         os:
           - ubuntu24.04
-          - ubuntu22.04
-          - ubuntu20.04
-          - ubuntu18.04
-          - debian12
-          - debian11
-          - debian10
-          - amzn2023
-          - amzn2
-          - el9
-          - el8
     runs-on: ubuntu-latest
 
     steps:
