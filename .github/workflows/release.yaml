@@ -90,6 +90,9 @@ jobs:
           - amzn2
           - el9
           - el8
+        logging:
+          - stdout
+          - false
     runs-on: ubuntu-latest
 
     steps:
@@ -113,7 +116,7 @@ jobs:
         run: |
           IMAGE=ghcr.io/emqx/emqx-builder/5.3-13:1.15.7-${{ matrix.otp }}-${{ matrix.os }}
           docker run -i --rm -v $(pwd):/wd --workdir /wd --platform=linux/${{ matrix.arch }} \
-          -e BUILD_RELEASE=1 -e QUIC_TLS=${{ matrix.openssl }} \
+          -e BUILD_RELEASE=1 -e QUIC_TLS=${{ matrix.openssl }} -e QUIC_LOGGING_TYPE=${{ matrix.logging}} \
           $IMAGE bash -euc 'git config --global --add safe.directory /wd; make'
 
       - uses: actions/upload-artifact@v4
