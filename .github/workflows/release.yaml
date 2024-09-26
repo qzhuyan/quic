@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         otp:
-          - 25
+          #- 25
           - 26
         openssl:
           - openssl3
@@ -26,7 +26,7 @@ jobs:
           - sys
         os:
           - macos-14
-          - macos-13
+          #- macos-13
     runs-on: ${{ matrix.os }}
     steps:
 
@@ -71,7 +71,7 @@ jobs:
       fail-fast: false
       matrix:
         otp:
-          - 25.3.2-2
+          #- 25.3.2-2
           - 26.2.5.2-1
         openssl:
           - openssl3
@@ -79,19 +79,19 @@ jobs:
           - sysopenssl
         arch:
           - amd64
-          - arm64
+          #- arm64
         os:
           - ubuntu24.04
-          - ubuntu22.04
-          - ubuntu20.04
-          - ubuntu18.04
-          - debian12
-          - debian11
-          - debian10
-          - amzn2023
-          - amzn2
-          - el9
-          - el8
+          # - ubuntu22.04
+          # - ubuntu20.04
+          # - ubuntu18.04
+          # - debian12
+          # - debian11
+          # - debian10
+          # - amzn2023
+          # - amzn2
+          # - el9
+          # - el8
     runs-on: ubuntu-latest
 
     steps:
