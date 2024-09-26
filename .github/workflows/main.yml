@@ -22,7 +22,6 @@ jobs:
         rebar3 fmt -c
 
   mac:
-    if: false
     timeout-minutes: 60
     needs: formatting-check
     strategy:
@@ -80,7 +79,6 @@ jobs:
 
 
   linux:
-    if: false
     needs: formatting-check
     runs-on: ubuntu-latest
     timeout-minutes: 25
