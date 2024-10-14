@@ -92,8 +92,6 @@ jobs:
           - el9
           - el8
         exclude:
-          - os: el9
-            openssl: sys
           - os: amzn2
             openssl: openssl3
     runs-on: ubuntu-latest
