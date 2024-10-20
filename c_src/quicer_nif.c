@@ -1575,7 +1575,11 @@ connection_controlling_process(ErlNifEnv *env,
       return ERROR_TUPLE_2(ATOM_BADARG);
     }
 
-  enif_demonitor_process(env, c_ctx, &c_ctx->owner_mon);
+  if (c_ctx->is_monitored)
+    {
+      enif_demonitor_process(env, c_ctx, &c_ctx->owner_mon);
+      c_ctx->is_monitored = FALSE;
+    }
 
   if (0
       != enif_monitor_process(
@@ -1586,7 +1590,7 @@ connection_controlling_process(ErlNifEnv *env,
       enif_monitor_process(env, c_ctx, caller, &c_ctx->owner_mon);
       return ERROR_TUPLE_2(ATOM_OWNER_DEAD);
     }
-
+  c_ctx->is_monitored = TRUE;
   TP_NIF_3(exit, (uintptr_t)c_ctx->Connection, (uintptr_t)&c_ctx);
   return ATOM_OK;
 }
@@ -1610,7 +1614,11 @@ stream_controlling_process(ErlNifEnv *env,
       return ERROR_TUPLE_2(ATOM_BADARG);
     }
 
-  enif_demonitor_process(env, s_ctx, &s_ctx->owner_mon);
+  if (s_ctx->is_monitored)
+    {
+      enif_demonitor_process(env, s_ctx, &s_ctx->owner_mon);
+      s_ctx->is_monitored = FALSE;
+    }
 
   if (0
       != enif_monitor_process(
@@ -1622,6 +1630,7 @@ stream_controlling_process(ErlNifEnv *env,
       enif_monitor_process(env, s_ctx, caller, &s_ctx->owner_mon);
       return ERROR_TUPLE_2(ATOM_OWNER_DEAD);
     }
+  s_ctx->is_monitored = TRUE;
   flush_sig_buffer(env, s_ctx);
   TP_NIF_3(exit, (uintptr_t)s_ctx->Stream, (uintptr_t)&s_ctx->owner->Pid);
   return ATOM_OK;
