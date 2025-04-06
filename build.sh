@@ -26,14 +26,6 @@ build() {
     cmake -B c_build -G "${GENERATOR}"
     $MakeCmd -C c_build -j "$JOBS"
     $MakeCmd -C c_build install
-    ## MacOS
-    if [ -f priv/libquicer_nif.dylib ]; then
-        # https://developer.apple.com/forums/thread/696460
-        # remove then copy avoid SIGKILL (Code Signature Invalid)
-        [ -f "$TARGET_SO" ] && rm "$TARGET_SO"
-        cp priv/libquicer_nif.dylib "$TARGET_SO"
-        echo "macOS"
-    fi
 }
 
 download() {

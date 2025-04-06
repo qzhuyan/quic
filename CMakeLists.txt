@@ -6,6 +6,8 @@ project(quicer)
 ## Bump manually when ABI changes
 set(QUICER_ABI_VERSION 1)
 
+set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+
 SET(Erlang_EI_INCLUDE_DIRS   ${Erlang_OTP_LIB_DIR}/${Erlang_EI_DIR}/include)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/priv/)
 
