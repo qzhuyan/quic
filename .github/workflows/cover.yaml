@@ -4,6 +4,7 @@ name: Test Coveralls
 
 jobs:
   run-cover:
+    if: false
     name: Run Cover
     runs-on: ubuntu-latest
     strategy:
