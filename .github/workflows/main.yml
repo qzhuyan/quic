@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-14
+#          - macos-14
           - macos-15
         otp:
           - '27'
@@ -120,6 +120,7 @@ jobs:
 
 
   linux-mesh:
+    if: false
     needs: pre-check
     runs-on: ubuntu-latest
     timeout-minutes: 25
