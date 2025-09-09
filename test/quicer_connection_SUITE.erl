@@ -1339,7 +1339,7 @@ default_listen_opts_client_cert(Config) ->
     [
         {cacertfile, filename:join(DataDir, "ca.pem")},
         {verify, verify_peer}
-        | tl(default_listen_opts(Config))
+        | proplists:delete(verify, default_listen_opts(Config))
     ].
 
 default_listen_opts_bad_cert(Config) ->
