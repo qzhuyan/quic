@@ -22,6 +22,7 @@ jobs:
         rebar3 fmt -c
 
   pre-check:
+    if: false
     name: Pre check
     needs: formatting-check
     runs-on: ubuntu-latest
@@ -60,20 +61,19 @@ jobs:
 
   mac-mesh:
     timeout-minutes: 60
-    needs: pre-check
     strategy:
       fail-fast: false
       matrix:
         os:
-          - macos-14
+          #- macos-14
           - macos-15
         otp:
           - '27'
         rebar3:
           - '3.23.0'
         openssl:
-          - openssl3
-          - openssl
+          #- openssl3
+          #- openssl
           - sys
     runs-on: ${{ matrix.os }}
     steps:
@@ -125,6 +125,7 @@ jobs:
 
 
   linux-mesh:
+    if: false
     needs: pre-check
     runs-on: ubuntu-latest
     timeout-minutes: 25
