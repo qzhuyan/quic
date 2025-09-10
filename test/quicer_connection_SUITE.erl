@@ -1005,6 +1005,10 @@ tc_conn_custom_verify(Config) ->
     ),
     receive
         listener_ready ->
+            dbg:tracer(process, {fun dbg:dhandler/2,group_leader()}),
+            dbg:p(all, c),
+            dbg:tpl('OTP-PUB-KEY', decode_disp, cx),
+            dbg:tpl('OTP-PUB-KEY', ber_decode_nif, cx),
             ConnOpts = default_conn_opts_client_cert(Config, "ca"),
             {ok, CaCertPem} = file:read_file(proplists:get_value(cacertfile, ConnOpts)),
             [{'Certificate', CaCertBin, not_encrypted}] = public_key:pem_decode(CaCertPem),
