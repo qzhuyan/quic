@@ -1,6 +1,23 @@
 cmake_minimum_required(VERSION 3.16)
-
 project(quicer)
+
+if (APPLE)
+  execute_process(
+    COMMAND xcrun --sdk macosx --show-sdk-path
+    OUTPUT_VARIABLE SDK_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE XCRUN_RESULT
+  )
+  if(NOT XCRUN_RESULT EQUAL 0)
+    message(WARNING "Failed to find macOS SDK path via xcrun; falling back to compiler default")
+  else()
+    message(WARNING "Set SYSROT to ${SDK_PATH}")
+    set(CMAKE_OSX_SYSROOT "${SDK_PATH}" CACHE PATH "The macOS SDK path")
+  endif()
+else()
+  message(WARNING "NOT APPLE, but ${CMAKE_SYSTEM_NAME}")
+
+endif()
 
 ## NIF library ABI version
 ## Bump manually when ABI changes
