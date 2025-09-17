@@ -113,7 +113,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.inputs.ref }}
 
-      - uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
       - name: build release
         run: |
           docker run -i --rm -v $(pwd):/wd --workdir /wd \
@@ -123,8 +122,11 @@ jobs:
               bash -euc '\
                 git config --global --add safe.directory /wd; \
                 grep -q "\"Amazon Linux 2\"\|\"CentOS-7\"" /etc/os-release && alternatives --set python /usr/bin/python2; \
-                export QUICER_TLS_VER; \
                 which yum && yum install -y perl-IPC-Cmd; \
+                export QUICER_TLS_VER; \
+                grep -q "CentOS-7" /etc/os-release && export ERL_AFLAGS="-ssl protocol_version \"['\''tls1.1'\'','\''tls1.2'\'']\""; \
+                echo "$ERL_AFLAGS"; \
+                erl -noshell -eval '\''application:ensure_all_started(ssl),io:format("~p", [application:get_env(ssl,protocol_version)]),halt()'\''; \
                 make'
 
       - uses: actions/upload-artifact@v4
