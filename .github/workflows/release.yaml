@@ -114,9 +114,9 @@ jobs:
                 grep -q "\"Amazon Linux 2\"\|\"CentOS-7\"" /etc/os-release && alternatives --set python /usr/bin/python2; \
                 which yum && yum install -y perl-IPC-Cmd; \
                 export QUICER_TLS_VER; \
-                grep -q "CentOS-7" /etc/os-release && export ERL_AFLAGS="-ssl protocol_version \"['\''tls1.1'\'','\''tls1.2'\'']\""; \
+                grep -q "CentOS-7" /etc/os-release && export ERL_AFLAGS="-ssl middlebox_comp_mode false"; \
                 echo "$ERL_AFLAGS"; \
-                erl -noshell -eval '\''application:ensure_all_started(ssl),io:format("~p", [application:get_env(ssl,protocol_version)]),halt()'\''; \
+                erl -noshell -eval '\''application:ensure_all_started(ssl),io:format("~p", [application:get_env(ssl,middlebox_comp_mode)]),halt()'\''; \
                 make'
 
       - uses: actions/upload-artifact@v4
