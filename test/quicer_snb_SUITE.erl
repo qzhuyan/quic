@@ -62,8 +62,11 @@
     tc_handle_cast_conn/1,
     tc_handle_cast_stream/1,
     tc_handle_call_conn/1,
-    tc_handle_call_stream/1
+    tc_handle_call_stream/1,
+    tc_stream_start_but_owner_down/1
 ]).
+
+-export([open_streams/4]).
 
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -499,6 +502,99 @@ tc_stream_owner_down(Config) ->
         end
     ),
     ok.
+
+tc_stream_start_but_owner_down(Config) ->
+    ServerConnCallback = example_server_connection,
+    ServerStreamCallback = example_server_stream,
+    Port = select_port(),
+    application:ensure_all_started(quicer),
+    ListenerOpts = [
+        {conn_acceptors, 32},
+        {peer_bidi_stream_count, 6000},
+        {peer_unidi_stream_count, 0}
+        | default_listen_opts(Config)
+    ],
+    ConnectionOpts = [
+        {conn_callback, ServerConnCallback},
+        {stream_acceptors, 2}
+        | default_conn_opts()
+    ],
+    StreamOpts = [
+        {stream_callback, ServerStreamCallback}
+        | default_stream_opts()
+    ],
+    Options = {ListenerOpts, ConnectionOpts, StreamOpts},
+    ct:pal("Listener Options: ~p", [Options]),
+    N = 3000,
+    ?my_check_trace(
+        #{timetrap => 10000},
+        begin
+            {ok, L} = quicer:listen(Port, default_listen_opts(Config)),
+            %%% GIVEN: a Server where no stream acceptor and conn owner will be used
+            %%%        as stream fallback owner but short-lived.
+            Me = self(),
+            spawn(fun() ->
+                {ok, Conn} = quicer:accept(L, [{active, false}], 8000),
+                {ok, Conn} = quicer:handshake(Conn, 5000),
+                Me ! handshaked,
+                timer:sleep(500)
+            end),
+            timer:sleep(500),
+            {ok, Conn} = quicer:connect(
+                "127.0.0.1",
+                Port,
+                [{alpn, ["sample"]}, {verify, none}, {local_bidi_stream_count, 3000}],
+                4000
+            ),
+            receive
+                handshaked -> ok
+            after 3000 ->
+                ct:fail("handshaked timeout")
+            end,
+            %%% WHEN: client create streams where no owners
+            spawn(?MODULE, open_streams, [Conn, N, 0, 0]),
+            ?block_until(#{
+                ?snk_kind := debug,
+                function := "handle_connection_event_peer_stream_started",
+                tag := "no_acceptor"
+            })
+        end,
+        fun(_Result, Trace) ->
+            ct:pal("Trace is ~p", [Trace]),
+            ?assert(
+                ?causality(
+                    #{
+                        ?snk_kind := debug,
+                        function := "handle_connection_event_peer_stream_started",
+                        tag := "no_acceptor",
+                        resource_id := _Rid
+                    },
+                    #{
+                        ?snk_kind := debug,
+                        function := "handle_connection_event_peer_stream_started",
+                        tag := "orphan_down",
+                        resource_id := _Rid
+                    },
+                    Trace
+                )
+            )
+        end
+    ),
+    ok.
+
+open_streams(_C, 0, S, F) ->
+    ct:pal("Open stream ~p/~p", [S, F]),
+    {S, F};
+open_streams(C, I, S, F) ->
+    case catch quicer:start_stream(C, [{active, false}]) of
+        {ok, S} ->
+            catch quicer:send(S, <<"x">>),
+            catch quicer:close_stream(S),
+            open_streams(C, I - 1, S + 1, F);
+        _R ->
+            %ct:pal("Open stream failed ~p", [_R]),
+            open_streams(C, I - 1, S, F + 1)
+    end.
 
 tc_stream_acceptor_down(Config) ->
     ServerConnCallback = example_server_connection,

@@ -1399,6 +1399,7 @@ handle_connection_event_peer_stream_started(QuicerConnCTX *c_ctx,
     {
       if (is_orphan)
         {
+          TP_CB_3(orphan_down, (uintptr_t)c_ctx->Connection, 0);
           return selected_owner_unreachable(s_ctx);
         }
       else
