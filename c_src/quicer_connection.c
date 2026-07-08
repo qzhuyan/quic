@@ -1395,6 +1395,8 @@ handle_connection_event_peer_stream_started(QuicerConnCTX *c_ctx,
 
   ERL_NIF_TERM report = make_event_with_props(
       env, ATOM_NEW_STREAM, eHandle, props_name, props_value, 2);
+  TP_CB_3(orphan_down, (uintptr_t)c_ctx->Connection, 0);
+  return selected_owner_unreachable(s_ctx);
   if (!enif_send(NULL, acc_pid, NULL, report))
     {
       if (is_orphan)
